@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Importar CSV para Banco de Dados</title>
+        <link rel="stylesheet" href="stylesheet.css" />
+
+        <script src="https://unpkg.com/htmx.org@1.6.1"></script>
+    </head>
+
+    <body>
+        <div class="container">
+            <div class="row">
+                <div class="col-md-12">
+                    <h1>Importe um csv para o Banco de Dados</h1>
+                </div>
+            </div>
+
+            <!-- Seção para upload do CSV -->
+            <div class="row">
+                <div class="col-md-12">
+                    <form action="/upload" method="post" enctype="multipart/form-data">
+                        <div class="form-group">
+                            <label for="csvFile">Selecione o arquivo CSV:</label>
+                            <input
+                                type="file"
+                                class="form-control"
+                                id="csvFile"
+                                name="csvFile"
+                                accept=".csv"
+                                required
+                            />
+                        </div>
+                        <div class="form-group">
+                            <label for="tableName">Nome da Tabela:</label>
+                            <input
+                                type="text"
+                                class="form-control"
+                                id="tableName"
+                                name="tableName"
+                                placeholder="Nome da tabela"
+                                required
+                            />
+                        </div>
+                        <button type="submit" class="btn btn-primary">Enviar</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Seção para seleção e busca na tabela -->
+            <div class="row mt-5">
+                <div class="col-md-12">
+                    <h2>Consultar Tabelas</h2>
+                    <div class="form-group">
+                        <label for="selectTable">Selecione a Tabela:</label>
+                        <select class="form-control" id="selectTable" name="selectTable">
+                            <!-- As opções podem ser preenchidas dinamicamente com JavaScript ou algum backend -->
+                            <option value="tabela1">Tabela 1</option>
+                            <option value="tabela2">Tabela 2</option>
+                            <!-- ... -->
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="searchInput">Buscar na Tabela:</label>
+                        <input type="text" class="form-control" id="searchInput" placeholder="Digite para buscar..." />
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Inclua aqui suas bibliotecas JS, como jQuery, se necessário -->
+    </body>
+</html>
