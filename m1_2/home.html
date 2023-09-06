@@ -18,7 +18,7 @@
                 </div>
             </div>
 
-            <!-- Secao para upload do CSV -->
+            <!-- Secao para upload do CSV (verificar, aparentemente eh xlsx)-->
             <div class="row">
                 <div class="col-md-12">
                     <form action="/upload" method="post" enctype="multipart/form-data">
@@ -62,18 +62,17 @@
                             name="selectTable"
                             hx-get="/tables"
                             hx-trigger="load"
+                            hx-on="htmx:afterOnLoad"
+                            hx-swap="outerHTML"
                         ></select>
                     </div>
-                    <!-- we add the keyup delay to have time to get the response before another request is sent -->
-
                     <div class="form-group">
                         <label for="searchInput">Buscar na Tabela:</label>
                         <input
                             hx-post="/search"
                             hx-trigger="keyup delay:500ms"
-                            hx-target="#searchResults"
+                            hx-target="#tableBody"
                             hx-vars="table:selectTable.value"
-                            hx-boost
                             type="text"
                             class="form-control"
                             id="searchInput"
@@ -81,12 +80,27 @@
                             placeholder="Digite para buscar..."
                         />
                     </div>
-                    <!-- Container for displaying search results -->
-                    <div id="searchResults"></div>
+                    <button
+                        class="btn btn-primary"
+                        hx-post="/list"
+                        hx-trigger="click"
+                        hx-target="#tableBody"
+                        hx-vars="table:selectTable.value"
+                    >
+                        Listar Tudo
+                    </button>
+                    <!-- Skeleton for the table, data will come from htmx -->
+                    <table class="table" id="searchResults">
+                        <thead id="tableHeaders">
+                            <!-- Headers will be populated here by the table onchange -->
+                        </thead>
+                        <tbody id="tableBody">
+                            <!-- Data will be populated here by the search or list -->
+                        </tbody>
+                    </table>
                 </div>
             </div>
+            <!-- FIM secao selecao tabela e busca -->
         </div>
-
-        <!-- Inclua aqui suas bibliotecas JS, como jQuery, se necessário -->
     </body>
 </html>

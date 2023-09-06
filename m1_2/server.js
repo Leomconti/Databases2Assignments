@@ -6,7 +6,7 @@ const cors = require("cors");
 const app = express();
 const port = 3000;
 
-const TableModel = require("./model.js");
+// const TableModel = require("./model.js");
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
@@ -51,25 +51,74 @@ app.post("/upload", (req, res) => {
 
 app.get("/tables", (req, res) => {
     console.log("It's calling the /tables endpoint");
+    // here we'll get the tables from the database and show them as options
     const tables = [
-        { id: "tabela1", name: "Tabela 1" },
-        { id: "tabela2", name: "Tabela 2" },
-        { id: "tabela3", name: "Tabela 3" },
+        { id: "Customer", name: "Cliente" },
+        { id: "Rental", name: "Aluguel" },
+        { id: "Payment", name: "Pagamento" },
     ];
 
     // Send only the option elements as the response
     let optionsHTML = tables.map((table) => `<option value="${table.id}">${table.name}</option>`).join("");
-    res.send(optionsHTML);
+    res.send(`
+        <select
+            class="form-control"
+            id="selectTable"
+            name="selectTable"
+            hx-post="/tableHeaders"
+            hx-trigger="load, change"
+            hx-target="#tableHeaders"
+            hx-vars="table:selectTable.value"
+        >
+            ${optionsHTML}
+        </select>`);
 });
 
 app.post("/search", (req, res) => {
+    console.log("SEARCH");
     const query = req.body.query;
     const table = req.body.table;
-    // vendo se chegou no endpoint pelo menos
-    console.log(`Searching for '${query}' in table '${table}'`);
 
+    // use sequelize to query the database by name and return the results
     // enviando resposta teste
-    res.send(`Results for '${query}' in table '${table}': ...`);
+    res.send(`<td>SEARCH</td>`);
+});
+
+app.post("/list", (req, res) => {
+    const table = req.body.table;
+
+    rows = [
+        { id: "1", name: "Cliente 1" },
+        { id: "2", name: "Cliente 2" },
+        { id: "3", name: "Cliente 3" },
+        { id: "4", name: "Cliente 4" },
+        { id: "5", name: "Cliente 5" },
+    ];
+
+    // fazer um map diferente, para cada row, coloca em <tr> antes, dai passa cada coluna em <td>, como ja esta abaixo
+
+    let rowsHtml = rows.map((row) => `<tr><td value="${row.name}">${row.name}</td></tr>`).join("");
+    res.send(`${rowsHtml}`);
+});
+
+app.post("/tableHeaders", (req, res) => {
+    const table = req.body.table;
+
+    // teste q o copilot completou kkkkk
+    // utilizar o sequelize para pegar os headers certo
+    headers = [
+        { id: "customer_id", name: "ID" },
+        { id: "first_name", name: "Nome" },
+        { id: "last_name", name: "Sobrenome" },
+        { id: "email", name: "Email" },
+        { id: "address_id", name: "Endereço" },
+        { id: "active", name: "Ativo" },
+        { id: "create_date", name: "Data de criação" },
+        { id: "last_update", name: "Última atualização" },
+    ];
+
+    let headersHtml = headers.map((column) => `<th id="${column.name}">${column.name}</th>`).join("");
+    res.send(`<tr>${headersHtml}</tr>`);
 });
 
 app.listen(port, () => {
