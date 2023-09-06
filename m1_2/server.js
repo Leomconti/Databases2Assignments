@@ -1,6 +1,7 @@
 const express = require("express");
 const csvParser = require("csv-parser");
 const bodyParser = require("body-parser");
+const cors = require("cors");
 
 const app = express();
 const port = 3000;
@@ -9,6 +10,7 @@ const TableModel = require("./model.js");
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
+app.use(cors());
 
 app.get("/", (req, res) => {
     res.sendFile(__dirname + "/index.html");
@@ -48,15 +50,26 @@ app.post("/upload", (req, res) => {
 });
 
 app.get("/tables", (req, res) => {
-    // fazer busca das tabelas com o sequelize ("generalizar o codigo para buscar as tabelas")
+    console.log("It's calling the /tables endpoint");
     const tables = [
         { id: "tabela1", name: "Tabela 1" },
         { id: "tabela2", name: "Tabela 2" },
+        { id: "tabela3", name: "Tabela 3" },
     ];
 
-    // utilizando htmx ent manda o html para o cliente
+    // Send only the option elements as the response
     let optionsHTML = tables.map((table) => `<option value="${table.id}">${table.name}</option>`).join("");
-    res.send(`<select class="form-control" id="selectTable" name="selectTable">${optionsHTML}</select>`);
+    res.send(optionsHTML);
+});
+
+app.post("/search", (req, res) => {
+    const query = req.body.query;
+    const table = req.body.table;
+    // vendo se chegou no endpoint pelo menos
+    console.log(`Searching for '${query}' in table '${table}'`);
+
+    // enviando resposta teste
+    res.send(`Results for '${query}' in table '${table}': ...`);
 });
 
 app.listen(port, () => {

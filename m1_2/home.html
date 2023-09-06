@@ -5,8 +5,9 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Importar CSV para Banco de Dados</title>
         <link rel="stylesheet" href="stylesheet.css" />
+        <base href="http://localhost:3000/" />
 
-        <script src="https://unpkg.com/htmx.org@1.6.1"></script>
+        <script src="https://unpkg.com/htmx.org@1.9.5"></script>
     </head>
 
     <body>
@@ -17,7 +18,7 @@
                 </div>
             </div>
 
-            <!-- Seção para upload do CSV -->
+            <!-- Secao para upload do CSV -->
             <div class="row">
                 <div class="col-md-12">
                     <form action="/upload" method="post" enctype="multipart/form-data">
@@ -47,24 +48,41 @@
                     </form>
                 </div>
             </div>
+            <!-- Fim secao upload csv -->
 
-            <!-- Seção para seleção e busca na tabela -->
+            <!-- secao selecao tabela e busca -->
             <div class="row mt-5">
                 <div class="col-md-12">
                     <h2>Consultar Tabelas</h2>
                     <div class="form-group">
                         <label for="selectTable">Selecione a Tabela:</label>
-                        <select class="form-control" id="selectTable" name="selectTable">
-                            <!-- As opções podem ser preenchidas dinamicamente com JavaScript ou algum backend -->
-                            <option value="tabela1">Tabela 1</option>
-                            <option value="tabela2">Tabela 2</option>
-                            <!-- ... -->
-                        </select>
+                        <select
+                            class="form-control"
+                            id="selectTable"
+                            name="selectTable"
+                            hx-get="/tables"
+                            hx-trigger="load"
+                        ></select>
                     </div>
+                    <!-- we add the keyup delay to have time to get the response before another request is sent -->
+
                     <div class="form-group">
                         <label for="searchInput">Buscar na Tabela:</label>
-                        <input type="text" class="form-control" id="searchInput" placeholder="Digite para buscar..." />
+                        <input
+                            hx-post="/search"
+                            hx-trigger="keyup delay:500ms"
+                            hx-target="#searchResults"
+                            hx-vars="table:selectTable.value"
+                            hx-boost
+                            type="text"
+                            class="form-control"
+                            id="searchInput"
+                            name="query"
+                            placeholder="Digite para buscar..."
+                        />
                     </div>
+                    <!-- Container for displaying search results -->
+                    <div id="searchResults"></div>
                 </div>
             </div>
         </div>
