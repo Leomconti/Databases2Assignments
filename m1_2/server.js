@@ -6,7 +6,7 @@ const cors = require("cors");
 const app = express();
 const port = 3000;
 
-// const TableModel = require("./model.js");
+const TableModel = require("./model.js");
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
@@ -40,6 +40,8 @@ app.post("/upload", (req, res) => {
             })
             .on("end", async () => {
                 try {
+                    // depois simplificar la para nao escolher a tabela talvez, se ficar mt hard, se nao, pega o nome colocado no input
+                    // mas usa o nosso table model para inserir os dados
                     await TableModel.bulkCreate(rows);
                     res.send("Dados inseridos com sucesso na base");
                 } catch (error) {
@@ -50,7 +52,8 @@ app.post("/upload", (req, res) => {
 });
 
 app.get("/tables", (req, res) => {
-    console.log("It's calling the /tables endpoint");
+    // TODO: Show tables for the database !!!!
+
     // here we'll get the tables from the database and show them as options
     const tables = [
         { id: "Customer", name: "Cliente" },
@@ -75,9 +78,10 @@ app.get("/tables", (req, res) => {
 });
 
 app.post("/search", (req, res) => {
-    console.log("SEARCH");
     const query = req.body.query;
     const table = req.body.table;
+
+    // TODO: use sequelize to query the database by name and return the results !!!!
 
     // use sequelize to query the database by name and return the results
     // enviando resposta teste
@@ -86,6 +90,8 @@ app.post("/search", (req, res) => {
 
 app.post("/list", (req, res) => {
     const table = req.body.table;
+
+    // TODO: use sequelize to query the database and return the results !!!! (for the selected table ;D)
 
     rows = [
         { id: "1", name: "Cliente 1" },
@@ -103,6 +109,8 @@ app.post("/list", (req, res) => {
 
 app.post("/tableHeaders", (req, res) => {
     const table = req.body.table;
+
+    // TODO: use sequelize to get the correct headers !!!! (column names)
 
     // teste q o copilot completou kkkkk
     // utilizar o sequelize para pegar os headers certo
