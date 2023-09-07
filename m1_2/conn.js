@@ -4,7 +4,7 @@ const MYSQL_IP = "localhost";
 const MYSQL_LOGIN = "admin";
 const MYSQL_PASSWORD = "admin123";
 // const DATABASE = "m1_2";
-const DATABASE = "saquila";
+const DATABASE = "sakila";
 const sequelize = new Sequelize(DATABASE, MYSQL_LOGIN, MYSQL_PASSWORD, {
     host: MYSQL_IP,
     port: 3306,

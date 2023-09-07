@@ -2,11 +2,15 @@ const express = require("express");
 const csvParser = require("csv-parser");
 const bodyParser = require("body-parser");
 const cors = require("cors");
+const { Op } = require("sequelize");
+const sequelize = require("./conn.js");
 
 const app = express();
 const port = 3000;
 
-const TableModel = require("./model.js");
+// const TableModel = require("./model.js");
+
+const TableModel = require("./model_teste.js");
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
@@ -51,18 +55,15 @@ app.post("/upload", (req, res) => {
     });
 });
 
-app.get("/tables", (req, res) => {
-    // TODO: Show tables for the database !!!!
+app.get("/tables", async (req, res) => {
+    let optionsHTML = "";
+    let [tables] = await sequelize.query("SHOW TABLES");
 
-    // here we'll get the tables from the database and show them as options
-    const tables = [
-        { id: "Customer", name: "Cliente" },
-        { id: "Rental", name: "Aluguel" },
-        { id: "Payment", name: "Pagamento" },
-    ];
+    tables.forEach((row) => {
+        let tableName = Object.values(row)[0];
+        optionsHTML += `<option value="${tableName}">${tableName}</option>`;
+    });
 
-    // Send only the option elements as the response
-    let optionsHTML = tables.map((table) => `<option value="${table.id}">${table.name}</option>`).join("");
     res.send(`
         <select
             class="form-control"
@@ -79,72 +80,76 @@ app.get("/tables", (req, res) => {
 
 app.post("/search", async (req, res) => {
     const query = req.body.query;
-    const table = req.body.table;
+    const selectTable = req.body.table;
+    const table = getTableModel(selectTable);
 
-    rows = await TableModel.findAll({
+    rows = await table.findAll({
         where: {
-            name: {
+            first_name: {
                 [Op.substring]: query, // substring would be %query% look at: https://sequelize.org/docs/v6/core-concepts/model-querying-basics/
             },
         },
     });
 
-    let rowsHtml = "";
-
-    rows.forEach((row) => {
-        let columnsHtml = "";
-
-        for (let value in row) {
-            // we'll be getting each column value from the row, and adding it to the <td>
-            columnsHtml += `<td>${row[value]}</td>`;
-        }
-        rowsHtml += `<tr>${columnsHtml}</tr>`; // for each row we create a <tr> element with the columns (<td>)
-    });
-
-    // @anderson !! Essa de cima eh a msm coisa doq emabaixo ne? parei pra pensar e mt mais facil tacar o foreach
-    // mas eu vou precisar tacar um await nele ou da boa assim?
-
-    // for (let i = 0; i < rows.length; i++) {
-    //     let row = rows[i];
-    //     let columnsHtml = "";
-
-    //     for (let value in row) {
-    //         // we'll be getting each column value from the row, and adding it to the <td>
-    //         columnsHtml += `<td>${row[value]}</td>`;
-    //     }
-    //     rowsHtml += `<tr>${columnsHtml}</tr>`; // for each row we create a <tr> element with the columns (<td>)
-    // }
-
-    res.send(`${rowsHtml}`);
+    res.send(`${parseRowsToTable(rows)}`);
 });
 
 app.post("/list", async (req, res) => {
-    const table = req.body.table;
-    rows = await TableModel.findAll();
+    const selectTable = req.body.table;
+    const table = getTableModel(selectTable);
 
-    let rowsHtml = "";
+    rows = await table.findAll();
 
-    rows.forEach((row) => {
-        let columnsHtml = "";
-        for (let value in row) {
-            columnsHtml += `<td>${row[value]}</td>`; // we'll be getting each column value from the row, and adding it to the <td>
-        }
-        rowsHtml += `<tr>${columnsHtml}</tr>`; // for each row we create a <tr> element with the columns (<td>)
-    });
-
-    res.send(`${rowsHtml}`);
+    res.send(`${parseRowsToTable(rows)}`);
 });
 
 app.post("/tableHeaders", (req, res) => {
-    const table = req.body.table;
+    const selectTable = req.body.table;
+    const table = getTableModel(selectTable);
 
-    for (let key in TableModel.getAttributes()) {
-        // rawAttributes is deprecated, so we use getAttributes, test it out before!
-        headersHtml += `<th id="${key}">${key}</th>`;
+    let headersHtml = "";
+
+    for (let key in table.getAttributes()) {
+        headersHtml += `<th id="${key}">${key}</th>`; // rawAttributes is deprecated, so we use getAttributes, test it out before!
     }
     res.send(`<tr>${headersHtml}</tr>`);
 });
 
+// // selecionar a coluna para buscar no search
+// app.post("/cols", (req, res) => {
+//     const selectTable = req.body.table;
+//     const table = getTableModel(selectTable);
+//     let optionsHTML = "";
+
+//     for (let key in table.getAttributes()) {
+//         optionsHTML += `<option value="${key}">${key}</option>`;
+//     }
+//     res.send(optionsHTML);
+// });
+
 app.listen(port, () => {
     console.log(`Server running at http://localhost:${port}`);
 });
+
+// let's just retrieve the one we've mapped, but later it could be sth to get any model based on table name
+function getTableModel(tableName) {
+    return TableModel;
+}
+
+function parseRowsToTable(rows) {
+    let rowsHtml = "";
+    let row = rows.map((r) => {
+        return r.dataValues;
+    });
+
+    row.forEach((value) => {
+        let columnsHtml = "";
+
+        Object.values(value).map((v) => {
+            columnsHtml += `<td>${v}</td>`;
+        });
+        rowsHtml += `<tr>${columnsHtml}</tr>`;
+    });
+
+    return rowsHtml;
+}

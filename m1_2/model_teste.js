@@ -1,5 +1,5 @@
 const { Sequelize, DataTypes } = require("sequelize");
-const sequelize = require("./sql.js");
+const sequelize = require("./conn.js");
 
 const Customer = sequelize.define(
     "Customer",
@@ -172,4 +172,5 @@ Customer.hasMany(Payment, { foreignKey: "customer_id" }); // porem um customer p
 Payment.belongsTo(Rental, { foreignKey: "rental_id" }); // cada pagamento so tem um rental
 Rental.hasOne(Payment, { foreignKey: "rental_id" }); // cada rental so tem um pagamento
 
-module.exports = { Customer, Rental, Payment };
+// module.exports = { Customer, Rental, Payment };
+module.exports = Customer;
