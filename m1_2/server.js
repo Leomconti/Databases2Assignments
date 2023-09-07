@@ -40,8 +40,8 @@ app.post("/upload", (req, res) => {
             })
             .on("end", async () => {
                 try {
-                    // depois simplificar la para nao escolher a tabela talvez, se ficar mt hard, se nao, pega o nome colocado no input
-                    // mas usa o nosso table model para inserir os dados
+                    // later we can simplify the input etc, I just really wanted to test out htmx, seems great
+                    // lets use the defined model to insert data
                     await TableModel.bulkCreate(rows);
                     res.send("Dados inseridos com sucesso na base");
                 } catch (error) {
@@ -77,55 +77,71 @@ app.get("/tables", (req, res) => {
         </select>`);
 });
 
-app.post("/search", (req, res) => {
+app.post("/search", async (req, res) => {
     const query = req.body.query;
     const table = req.body.table;
 
-    // TODO: use sequelize to query the database by name and return the results !!!!
+    rows = await TableModel.findAll({
+        where: {
+            name: {
+                [Op.substring]: query, // substring would be %query% look at: https://sequelize.org/docs/v6/core-concepts/model-querying-basics/
+            },
+        },
+    });
 
-    // use sequelize to query the database by name and return the results
-    // enviando resposta teste
-    res.send(`<td>SEARCH</td>`);
+    let rowsHtml = "";
+
+    rows.forEach((row) => {
+        let columnsHtml = "";
+
+        for (let value in row) {
+            // we'll be getting each column value from the row, and adding it to the <td>
+            columnsHtml += `<td>${row[value]}</td>`;
+        }
+        rowsHtml += `<tr>${columnsHtml}</tr>`; // for each row we create a <tr> element with the columns (<td>)
+    });
+
+    // @anderson !! Essa de cima eh a msm coisa doq emabaixo ne? parei pra pensar e mt mais facil tacar o foreach
+    // mas eu vou precisar tacar um await nele ou da boa assim?
+
+    // for (let i = 0; i < rows.length; i++) {
+    //     let row = rows[i];
+    //     let columnsHtml = "";
+
+    //     for (let value in row) {
+    //         // we'll be getting each column value from the row, and adding it to the <td>
+    //         columnsHtml += `<td>${row[value]}</td>`;
+    //     }
+    //     rowsHtml += `<tr>${columnsHtml}</tr>`; // for each row we create a <tr> element with the columns (<td>)
+    // }
+
+    res.send(`${rowsHtml}`);
 });
 
-app.post("/list", (req, res) => {
+app.post("/list", async (req, res) => {
     const table = req.body.table;
+    rows = await TableModel.findAll();
 
-    // TODO: use sequelize to query the database and return the results !!!! (for the selected table ;D)
+    let rowsHtml = "";
 
-    rows = [
-        { id: "1", name: "Cliente 1" },
-        { id: "2", name: "Cliente 2" },
-        { id: "3", name: "Cliente 3" },
-        { id: "4", name: "Cliente 4" },
-        { id: "5", name: "Cliente 5" },
-    ];
+    rows.forEach((row) => {
+        let columnsHtml = "";
+        for (let value in row) {
+            columnsHtml += `<td>${row[value]}</td>`; // we'll be getting each column value from the row, and adding it to the <td>
+        }
+        rowsHtml += `<tr>${columnsHtml}</tr>`; // for each row we create a <tr> element with the columns (<td>)
+    });
 
-    // fazer um map diferente, para cada row, coloca em <tr> antes, dai passa cada coluna em <td>, como ja esta abaixo
-
-    let rowsHtml = rows.map((row) => `<tr><td value="${row.name}">${row.name}</td></tr>`).join("");
     res.send(`${rowsHtml}`);
 });
 
 app.post("/tableHeaders", (req, res) => {
     const table = req.body.table;
 
-    // TODO: use sequelize to get the correct headers !!!! (column names)
-
-    // teste q o copilot completou kkkkk
-    // utilizar o sequelize para pegar os headers certo
-    headers = [
-        { id: "customer_id", name: "ID" },
-        { id: "first_name", name: "Nome" },
-        { id: "last_name", name: "Sobrenome" },
-        { id: "email", name: "Email" },
-        { id: "address_id", name: "Endereço" },
-        { id: "active", name: "Ativo" },
-        { id: "create_date", name: "Data de criação" },
-        { id: "last_update", name: "Última atualização" },
-    ];
-
-    let headersHtml = headers.map((column) => `<th id="${column.name}">${column.name}</th>`).join("");
+    for (let key in TableModel.getAttributes()) {
+        // rawAttributes is deprecated, so we use getAttributes, test it out before!
+        headersHtml += `<th id="${key}">${key}</th>`;
+    }
     res.send(`<tr>${headersHtml}</tr>`);
 });
 
