@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Importar CSV para Banco de Dados</title>
+    <link
+      rel="stylesheet"
+      href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+    />
+    <base href="http://localhost:3000/" />
+
+    <script src="https://unpkg.com/htmx.org@1.9.5"></script>
+  </head>
+
+  <body>
+    <div class="container">
+      <div class="row mt-5">
+        <div class="col-md-12">
+          <h1>Importe um csv para o Banco de Dados</h1>
+        </div>
+      </div>
+
+      <!-- Secao para upload do CSV (verificar, aparentemente eh xlsx)-->
+      <div class="row mt-5">
+        <div class="col-md-5">
+          <form action="/upload" method="post" enctype="multipart/form-data">
+            <div class="form-group">
+              <label for="csvFile">Selecione o arquivo CSV:</label>
+              <input
+                type="file"
+                id="csvFile"
+                name="csvFile"
+                accept=".csv"
+                required
+              />
+            </div>
+            <button type="submit" class="btn btn-primary">Enviar</button>
+          </form>
+        </div>
+      </div>
+      <!-- Fim secao upload csv -->
+
+      <!-- secao selecao tabela e busca -->
+      <div class="row mt-5">
+        <div class="col-md-6">
+          <h2>Consultar Tabelas</h2>
+          <label for="selectTable">Selecione a Tabela:</label>
+          <select
+            class="form-control"
+            id="selectTable"
+            name="selectTable"
+            hx-get="/tables"
+            hx-trigger="load"
+            hx-on="htmx:afterOnLoad"
+            hx-swap="outerHTML"
+          ></select>
+          <div class="form-group mt-3">
+            <label for="searchInput">Buscar na Tabela:</label>
+            <input
+              hx-post="/search"
+              hx-trigger="keyup delay:300ms"
+              hx-target="#tableBody"
+              hx-vars="table:selectTable.value"
+              type="text"
+              class="form-control"
+              id="searchInput"
+              name="query"
+              placeholder="Digite para buscar..."
+            />
+          </div>
+          <button
+            class="btn btn-primary"
+            hx-post="/list"
+            hx-trigger="click"
+            hx-target="#tableBody"
+            hx-vars="table:selectTable.value"
+          >
+            Listar Tudo
+          </button>
+          <!-- Skeleton for the table, data will come from htmx -->
+          <table class="table mt-3" id="searchResults">
+            <thead id="tableHeaders">
+              <!-- Headers will be populated here by the table onchange -->
+            </thead>
+            <tbody id="tableBody">
+              <!-- Data will be populated here by the search or list -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- FIM secao selecao tabela e busca -->
+    </div>
+  </body>
+</html>
