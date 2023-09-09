@@ -1,16 +1,23 @@
 const express = require("express");
-const csvParser = require("csv-parser");
 const bodyParser = require("body-parser");
 const cors = require("cors");
+const csv = require("csv-parser");
+
 const { Op } = require("sequelize");
 const sequelize = require("./conn.js");
+
+const fs = require("fs");
 
 const app = express();
 const port = 3000;
 
-// const TableModel = require("./model.js");
+const TableModel = require("./model.js");
+const expressFileUpload = require("express-fileupload");
 
-const TableModel = require("./model_teste.js");
+// here the upload is handled by multer automatically
+const upload = multer({ dest: "uploads/" }); // this is to store uploaded files
+
+app.use(expressFileUpload());
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
@@ -20,39 +27,32 @@ app.get("/", (req, res) => {
     res.sendFile(__dirname + "/index.html");
 });
 
-app.post("/upload", (req, res) => {
-    let dataString = "";
-    req.on("data", (chunk) => {
-        dataString += chunk;
+app.post("/upload", async (req, res) => {
+    const file = req.files.csvFile;
+    const path = `./uploads/${file.name}`;
+
+    await file.mv(path, async (err) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).send("Erro no upload do arquivo");
+        }
     });
 
-    req.on("end", () => {
-        const csvData = dataString.split("csvFile=")[1]; // Adjust based on your form field name
-        const decodedCsv = decodeURIComponent(csvData);
 
-        const rows = [];
-        const stream = require("stream");
-        const s = new stream.Readable();
-
-        s._read = () => {};
-        s.push(decodedCsv);
-        s.push(null);
-
-        s.pipe(csvParser())
-            .on("data", (row) => {
-                rows.push(row);
-            })
-            .on("end", async () => {
-                try {
-                    // later we can simplify the input etc, I just really wanted to test out htmx, seems great
-                    // lets use the defined model to insert data
-                    await TableModel.bulkCreate(rows);
-                    res.send("Dados inseridos com sucesso na base");
-                } catch (error) {
-                    res.status(500).send("Erro ao inserir dados.");
-                }
-            });
-    });
+    const results = [];
+    fs.createReadStream(path)
+        .pipe(csv())
+        .on("data", (row) => {
+            console.log(row);
+            results.push(row);
+        })
+        .on("end", async () => {
+            console.log(results);
+            // Here, insert into your database using:
+            // await TableModel.bulkCreate(results);
+            // Ensure that your model's fields match the CSV columns.
+            res.send({ status: "success", data: results });
+        });
 });
 
 app.get("/tables", async (req, res) => {
