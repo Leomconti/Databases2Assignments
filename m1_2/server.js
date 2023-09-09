@@ -12,7 +12,7 @@ const fs = require("fs");
 const app = express();
 const port = 3000;
 
-const TableModel = require("./model.js");
+const TableCsv = require("./model.js");
 
 // here the upload is handled by multer automatically
 const upload = multer({ dest: "uploads/" }); // this is to store uploaded files
@@ -32,17 +32,22 @@ app.post("/upload", upload.single("csvFile"), async (req, res) => {
     const path = file.path;
     allData = [];
     // reading the uploaded CSV file
+    const dataToInsert = [];
+
     fs.createReadStream(path)
         .pipe(csv())
         .on("data", (row) => {
-            allData.push(row);
+            dataToInsert.push(row);
         })
         .on("end", async () => {
-            await TableModel.bulkCreate(allData);
-            console.log("finishou");
+            try {
+                await TableCsv.bulkCreate(dataToInsert);
+                console.log("end");
+            } catch (err) {
+                console.error("Error inserting data:", err);
+            }
         })
         .on("error", (err) => {
-            console.log("deu ruim");
             console.error(err);
         });
 });

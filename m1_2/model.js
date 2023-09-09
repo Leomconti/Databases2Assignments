@@ -1,8 +1,8 @@
 const { Sequelize, DataTypes, Model } = require("sequelize");
 const sequelize = require("./conn.js");
 
-class TableCsv extends Model {}
-TableCsv.init(
+const TableCsv = sequelize.define(
+    "TableCsv",
     {
         user_id: {
             type: DataTypes.INTEGER,
@@ -34,11 +34,11 @@ TableCsv.init(
         },
     },
     {
-        sequelize,
-        modelName: "TableCsv",
+        tableName: "TableCsv",
+        timestamps: false,
     }
 );
 
-TableCsv.sync();
+TableCsv.sync({ force: true });
 
 module.exports = TableCsv;
