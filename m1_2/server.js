@@ -130,7 +130,7 @@ app.listen(port, () => {
 
 // let's just retrieve the one we've mapped, but later it could be sth to get any model based on table name
 function getTableModel(tableName) {
-    return TableModel;
+    return TableCsv;
 }
 
 function parseRowsToTable(rows) {
