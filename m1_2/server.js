@@ -1,4 +1,5 @@
 const express = require("express");
+const multer = require("multer");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 const csv = require("csv-parser");
@@ -12,46 +13,37 @@ const app = express();
 const port = 3000;
 
 const TableModel = require("./model.js");
-const expressFileUpload = require("express-fileupload");
 
 // here the upload is handled by multer automatically
 const upload = multer({ dest: "uploads/" }); // this is to store uploaded files
 
-app.use(expressFileUpload());
-
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
+
 app.use(cors());
 
 app.get("/", (req, res) => {
     res.sendFile(__dirname + "/index.html");
 });
 
-app.post("/upload", async (req, res) => {
-    const file = req.files.csvFile;
-    const path = `./uploads/${file.name}`;
-
-    await file.mv(path, async (err) => {
-        if (err) {
-            console.error(err);
-            return res.status(500).send("Erro no upload do arquivo");
-        }
-    });
-
-
-    const results = [];
+// here we use the upload we defined above to use multer
+app.post("/upload", upload.single("csvFile"), async (req, res) => {
+    const file = req.file;
+    const path = file.path;
+    allData = [];
+    // reading the uploaded CSV file
     fs.createReadStream(path)
         .pipe(csv())
         .on("data", (row) => {
-            console.log(row);
-            results.push(row);
+            allData.push(row);
         })
         .on("end", async () => {
-            console.log(results);
-            // Here, insert into your database using:
-            // await TableModel.bulkCreate(results);
-            // Ensure that your model's fields match the CSV columns.
-            res.send({ status: "success", data: results });
+            await TableModel.bulkCreate(allData);
+            console.log("finishou");
+        })
+        .on("error", (err) => {
+            console.log("deu ruim");
+            console.error(err);
         });
 });
 
