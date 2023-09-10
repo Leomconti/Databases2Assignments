@@ -1,19 +1,17 @@
 const { Sequelize, DataTypes, Model } = require("sequelize");
 const sequelize = require("./conn.js");
 
-const TableCsv = sequelize.define(
-    "TableCsv",
+const Usuarios = sequelize.define(
+    "Usuarios",
     {
         user_id: {
             type: DataTypes.STRING,
         },
         first_name: {
             type: DataTypes.STRING,
-            allowNull: false,
         },
         last_name: {
             type: DataTypes.STRING,
-            allowNull: false,
         },
         sex: {
             type: DataTypes.STRING,
@@ -23,22 +21,23 @@ const TableCsv = sequelize.define(
         },
         phone: {
             type: DataTypes.STRING,
-            allowNull: true,
         },
         date_of_birth: {
-            type: DataTypes.DATEONLY,
+            type: DataTypes.DATEONLY, // n tem hroario nem nd
         },
         job_title: {
             type: DataTypes.STRING,
-            allowNull: true,
+            allowNull: true, // arquivo mo grande n sabemos se vai ter algo vazio, ent deixa
         },
     },
     {
-        tableName: "TableCsv",
+        tableName: "Usuarios",
         timestamps: false,
     }
 );
 
-TableCsv.sync({ force: false });
+// colocar force true para na apresentacao fazer o upload do zero la e tals
 
-module.exports = TableCsv;
+Usuarios.sync({ force: true });
+
+module.exports = Usuarios;

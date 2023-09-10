@@ -3,16 +3,17 @@ const multer = require("multer");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 const csv = require("csv-parser");
-const { Readable } = require("stream"); // Import the Readable stream
+const { Readable } = require("stream");
 
 const { Op } = require("sequelize");
 const sequelize = require("./conn.js");
 
+const TableCsv = require("./model.js"); // grab the table model
+
 const app = express();
 const port = 3000;
 
-const TableCsv = require("./model.js");
-
+// setup multer for reading the files
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
@@ -56,6 +57,8 @@ app.post("/upload", upload.single("csvFile"), async (req, res) => {
                 await TableCsv.bulkCreate(dataToInsert);
                 res.send('<div class="alert alert-success">Dados inseridos com sucesso!</div>');
             } catch (err) {
+                console.log("QUE PORRA DE ERRO QUE DEU????");
+                console.log(err);
                 res.send('<div class="alert alert-danger">Erro inserindo os dados na base.</div>');
             }
         })
@@ -92,6 +95,8 @@ app.post("/search", async (req, res) => {
             hx-trigger="revealed" 
             hx-swap="afterend">
           </tr>`;
+    } else {
+        rowsHtml += `<tr><td colspan="100%">Fim dos Resultados</td></tr>`;
     }
     res.send(rowsHtml);
 });
@@ -159,6 +164,16 @@ app.get("/tables", async (req, res) => {
         >
             ${optionsHTML}
         </select>`);
+});
+
+app.get("/getMessage", (req, res) => {
+    // meti um spinner q fica baita
+    res.send(`
+    <div class="alert alert-warning d-flex align-items-center">
+        <div class="spinner-border spinner-border-sm me-2"></div>
+        Inserindo os dados na base.
+    </div>
+    `);
 });
 
 app.listen(port, () => {

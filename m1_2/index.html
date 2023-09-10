@@ -3,90 +3,110 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Importar CSV para Banco de Dados</title>
-        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" />
+        <title>Processar e Listar Csv</title>
+        <link
+            href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css"
+            rel="stylesheet"
+            integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9"
+            crossorigin="anonymous"
+        />
         <base href="http://localhost:3000/" />
-
         <script src="https://unpkg.com/htmx.org@1.9.5"></script>
     </head>
 
     <body>
-        <div class="container">
-            <div class="row mt-5">
-                <div class="col-md-12">
-                    <h1>Importe um csv para o Banco de Dados</h1>
-                </div>
-            </div>
+        <div class="container mt-5">
+            <h2 class="text-primary bg-light p-3 rounded border border-primary shadow-sm mb-4">Importar o Csv</h2>
 
             <!-- Secao para upload do CSV (verificar, aparentemente eh xlsx)-->
-            <div class="row mt-5">
-                <div class="col-md-5">
-                    <form id="uploadForm" hx-post="/upload" hx-swap="outerHTML" enctype="multipart/form-data">
-                        <div class="form-group">
-                            <label for="csvFile">Selecione o arquivo CSV:</label>
-                            <input type="file" id="csvFile" name="csvFile" accept=".xlsx, .csv" required />
+            <div class="mb-5">
+                <!-- aqui a gnt taca a msg pra quando fazer o upload -->
+                <div hx-get="/getMessage" hx-trigger="submit from:#uploadForm" id="uploadMessage"></div>
+
+                <form
+                    id="uploadForm"
+                    hx-post="/upload"
+                    hx-swap="outerHTML"
+                    enctype="multipart/form-data"
+                    hx-trigger="submit"
+                    hx-target="#uploadMessage"
+                >
+                    <div class="mb-3">
+                        <label class="mb-3">Selecione o arquivo CSV:</label>
+                        <div class="input-group">
+                            <input
+                                type="file"
+                                class="form-control d-none"
+                                id="csvFile"
+                                name="csvFile"
+                                accept=".xlsx, .csv"
+                                required
+                                onchange="document.getElementById('fileLabel').innerText = this.files[0].name || 'Escolha arquivo'"
+                            />
+                            <label class="btn btn-outline-secondary" for="csvFile" id="fileLabel"
+                                >Escolha arquivo</label
+                            >
                         </div>
-                        <button type="submit" class="btn btn-primary">Enviar</button>
-                    </form>
-                </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Enviar</button>
+                </form>
             </div>
-            <!-- Fim secao upload csv -->
 
             <!-- secao selecao tabela e busca -->
-            <div class="row mt-5">
-                <div class="col-md-6">
-                    <h2>Consultar Tabelas</h2>
-                    <label for="selectTable">Selecione a Tabela:</label>
-                    <select
-                        class="form-control"
-                        id="selectTable"
-                        name="selectTable"
-                        hx-get="/tables"
-                        hx-trigger="load, click"
-                        hx-on="htmx:afterOnLoad"
-                        hx-swap="outerHTML"
-                        disabled
-                    ></select>
+            <h2 class="text-primary bg-light p-3 rounded border border-primary shadow-sm mb-4">Consultar Tabelas</h2>
 
-                    <div class="form-group mt-3">
-                        <label for="searchInput">Buscar na Tabela:</label>
-                        <input
-                            type="text"
-                            class="form-control"
-                            id="searchInput"
-                            name="query"
-                            placeholder="Digite para buscar..."
-                            hx-post="/search"
-                            hx-trigger="keyup delay:300ms"
-                            hx-target="#tableBody"
-                            hx-vars="table:selectTable.value, page:1"
-                        />
-                    </div>
-                    <button
-                        id="listAllButton"
-                        class="btn btn-primary"
-                        hx-post="/list"
-                        hx-trigger="click"
+            <div class="mb-3">
+                <!-- deixar disabled essa bomba pq n tem pra que trocar, foi mais para testar as paradas do htmx com sakila -->
+                <label for="selectTable">Selecione a Tabela:</label>
+                <select
+                    class="form-control"
+                    id="selectTable"
+                    name="selectTable"
+                    hx-get="/tables"
+                    hx-trigger="load, click"
+                    hx-on="htmx:afterOnLoad"
+                    hx-swap="outerHTML"
+                    disabled
+                ></select>
+
+                <!-- envia junto a tabela selecionada e 1 pois vai ser so a primeira request por aq -->
+
+                <div class="mb-3 mt-3">
+                    <label for="searchInput">Buscar na Tabela:</label>
+                    <input
+                        type="text"
+                        class="form-control"
+                        id="searchInput"
+                        name="query"
+                        placeholder="Digite para buscar..."
+                        hx-post="/search"
+                        hx-trigger="keyup delay:300ms"
                         hx-target="#tableBody"
                         hx-vars="table:selectTable.value, page:1"
-                    >
-                        Listar Tudo
-                    </button>
+                    />
+                </div>
+                <button
+                    id="listAllButton"
+                    class="btn btn-primary"
+                    hx-post="/list"
+                    hx-trigger="click"
+                    hx-target="#tableBody"
+                    hx-vars="table:selectTable.value, page:1"
+                >
+                    Listar Tudo
+                </button>
 
-                    <!-- Skeleton for the table, data will come from htmx -->
-                    <table class="table mt-3" id="searchResults">
-                        <thead id="tableHeaders">
-                            <!-- Headers will be populated here by the table onchange -->
+                <!-- esqueleto para a tabela, vai popular pelo html q vem do back  -->
+                <div class="mt-3">
+                    <table class="table table-hover table-bordered" id="searchResults">
+                        <thead id="tableHeaders" class="table-light">
+                            <!-- headers vem da tabela selecionadda -->
                         </thead>
-                        <!-- so it adds more rows instead of recreating -->
-                        <tbody id="tableBody">
-                            <!-- Data will be populated here by the search or list -->
-                        </tbody>
+                        <tbody id="tableBody"></tbody>
                     </table>
                 </div>
             </div>
-
-            <!-- FIM secao selecao tabela e busca -->
         </div>
     </body>
 </html>
