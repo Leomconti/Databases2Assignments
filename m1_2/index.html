@@ -21,7 +21,7 @@
             <!-- Secao para upload do CSV (verificar, aparentemente eh xlsx)-->
             <div class="row mt-5">
                 <div class="col-md-5">
-                    <form hx-post="/upload" hx-swap="outerHTML" enctype="multipart/form-data">
+                    <form id="uploadForm" hx-post="/upload" hx-swap="outerHTML" enctype="multipart/form-data">
                         <div class="form-group">
                             <label for="csvFile">Selecione o arquivo CSV:</label>
                             <input type="file" id="csvFile" name="csvFile" accept=".xlsx, .csv" required />
@@ -45,6 +45,7 @@
                         hx-trigger="load, click"
                         hx-on="htmx:afterOnLoad"
                         hx-swap="outerHTML"
+                        disabled
                     ></select>
                     <div class="form-group mt-3">
                         <label for="searchInput">Buscar na Tabela:</label>
@@ -83,5 +84,6 @@
 
             <!-- FIM secao selecao tabela e busca -->
         </div>
+        <script></script>
     </body>
 </html>

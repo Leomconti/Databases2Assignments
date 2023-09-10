@@ -3,19 +3,18 @@ const multer = require("multer");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 const csv = require("csv-parser");
+const { Readable } = require("stream"); // Import the Readable stream
 
 const { Op } = require("sequelize");
 const sequelize = require("./conn.js");
-
-const fs = require("fs");
 
 const app = express();
 const port = 3000;
 
 const TableCsv = require("./model.js");
 
-// here the upload is handled by multer automatically
-const upload = multer({ dest: "uploads/" }); // this is to store uploaded files
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
@@ -26,39 +25,42 @@ app.get("/", (req, res) => {
     res.sendFile(__dirname + "/index.html");
 });
 
-// here we use the upload we defined above to use multer
 app.post("/upload", upload.single("csvFile"), async (req, res) => {
+    // here we had to use the multer memoryStorage because the /upload was making the page reload ;-;
     const file = req.file;
-    const path = file.path;
+    const fileBuffer = file.buffer;
 
     const dataToInsert = [];
-    // get the attributes to map the csv
     const modelAttributes = Object.keys(TableCsv.getAttributes());
 
-    fs.createReadStream(path)
+    // Convert the buffer to a readable stream
+    const readableStream = new Readable({
+        read() {
+            this.push(fileBuffer);
+            this.push(null); // Indicates EOF
+        },
+    });
+
+    readableStream
         .pipe(csv())
         .on("data", (row) => {
             let value = Object.values(row);
-            //value.shift(); // remove the index column value
-            // map out the columns for the object to insert
             const rowObject = {};
             for (let i = 0; i < modelAttributes.length; i++) {
                 rowObject[modelAttributes[i]] = value[i];
             }
-
             dataToInsert.push(rowObject);
         })
         .on("end", async () => {
             try {
                 await TableCsv.bulkCreate(dataToInsert);
-                console.log("end");
+                res.send('<div class="alert alert-success">Dados inseridos com sucesso!</div>');
             } catch (err) {
-                console.error("Erro inserindo na base de dados:", err);
+                res.send('<div class="alert alert-danger">Erro inserindo os dados na base.</div>');
             }
         })
         .on("error", (err) => {
-            console.log("deu ruim");
-            console.error(err);
+            res.send('<div class="alert alert-danger">Erro inserindo os dados na base.</div>');
         });
 });
 
@@ -80,6 +82,7 @@ app.get("/tables", async (req, res) => {
             hx-trigger="load, change"
             hx-target="#tableHeaders"
             hx-vars="table:selectTable.value"
+            disabled
         >
             ${optionsHTML}
         </select>`);
@@ -122,18 +125,6 @@ app.post("/tableHeaders", (req, res) => {
     res.send(`<tr>${headersHtml}</tr>`);
 });
 
-// // selecionar a coluna para buscar no search
-// app.post("/cols", (req, res) => {
-//     const selectTable = req.body.table;
-//     const table = getTableModel(selectTable);
-//     let optionsHTML = "";
-
-//     for (let key in table.getAttributes()) {
-//         optionsHTML += `<option value="${key}">${key}</option>`;
-//     }
-//     res.send(optionsHTML);
-// });
-
 app.listen(port, () => {
     console.log(`Server running at http://localhost:${port}`);
 });
@@ -160,3 +151,47 @@ function parseRowsToTable(rows) {
 
     return rowsHtml;
 }
+
+// // selecionar a coluna para buscar no search
+// app.post("/cols", (req, res) => {
+//     const selectTable = req.body.table;
+//     const table = getTableModel(selectTable);
+//     let optionsHTML = "";
+
+//     for (let key in table.getAttributes()) {
+//         optionsHTML += `<option value="${key}">${key}</option>`;
+//     }
+//     res.send(optionsHTML);
+// });
+
+// app.post("/list", async (req, res) => {
+//     const table = getTableModel(req.body.table);
+//     const page = parseInt(req.body.page || "1"); // get's the page from the front, use 1 as default
+//     const limit = 10; // always limit 10, to lower complexity
+
+//     const offset = (page - 1) * limit; // calculate the offset for the query
+
+//     const rows = await table.findAll({
+//         // use offset and limit for pagination
+//         offset: offset,
+//         limit: limit,
+//     });
+//     const totalRows = await table.count(); // get the total rows to calculate the pages for the frontend
+
+//     const totalPages = Math.ceil(totalRows / limit); // get and round the pages based on the limit (10)
+
+//     // we send the data, as the html for the table, page, and the totalPages
+//     let tosend = {
+//         data: `<div id="htmxData">${parseRowsToTable(rows)}</div>`,
+//         page: page,
+//         totalPages: totalPages,
+//     };
+
+//     console.log(tosend);
+
+//     res.send({
+//         data: parseRowsToTable(rows),
+//         page: page,
+//         totalPages: totalPages,
+//     });
+// });
