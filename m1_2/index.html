@@ -47,18 +47,19 @@
                         hx-swap="outerHTML"
                         disabled
                     ></select>
+
                     <div class="form-group mt-3">
                         <label for="searchInput">Buscar na Tabela:</label>
                         <input
-                            hx-post="/search"
-                            hx-trigger="keyup delay:300ms"
-                            hx-target="#tableBody"
-                            hx-vars="table:selectTable.value, page:currentPage.value"
                             type="text"
                             class="form-control"
                             id="searchInput"
                             name="query"
                             placeholder="Digite para buscar..."
+                            hx-post="/search"
+                            hx-trigger="keyup delay:300ms"
+                            hx-target="#tableBody"
+                            hx-vars="table:selectTable.value, page:1"
                         />
                     </div>
                     <button
@@ -67,14 +68,10 @@
                         hx-post="/list"
                         hx-trigger="click"
                         hx-target="#tableBody"
-                        hx-swap="beforeend"
-                        hx-vars="table:selectTable.value, page:currentPage.value"
+                        hx-vars="table:selectTable.value, page:1"
                     >
                         Listar Tudo
                     </button>
-                    <!-- here we add an input so we keep track of the current page -->
-                    <!-- as we're using htmx, it just sends the html back, Or maybe I just couldnt figure out a way to send more stuff -->
-                    <input type="hidden" id="currentPage" value="1" />
 
                     <!-- Skeleton for the table, data will come from htmx -->
                     <table class="table mt-3" id="searchResults">
@@ -91,19 +88,5 @@
 
             <!-- FIM secao selecao tabela e busca -->
         </div>
-        <script>
-            // get the current page from the fake input
-            const currentPageInput = document.getElementById("currentPage");
-
-            // Infinite scroll logic
-            window.addEventListener("scroll", function () {
-                if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 100) {
-                    // Near bottom
-                    // change the value of the input so we can keep track of the page
-                    currentPageInput.value = parseInt(currentPageInput.value) + 1; // Increase page number
-                    document.getElementById("listAllButton").click();
-                }
-            });
-        </script>
     </body>
 </html>

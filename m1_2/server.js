@@ -84,20 +84,20 @@ app.post("/search", async (req, res) => {
 
     let rowsHtml = parseRowsToTable(rows);
 
-    const nextPage = page + 1;
-
-    // add the infinite scroll logic on the last cell, we send the data that's needed
-    rowsHtml += `
-      <tr hx-post="/search?query=${query}&page=${nextPage}&table=${selectTable}"  
-          hx-trigger="revealed" 
-          hx-swap="beforeend" 
-          hx-target="#tableBody">
-      </tr>`;
-
+    // check if it'snot ended
+    if (rows.length >= limit) {
+        rowsHtml += `
+            <tr hx-post="/search"  
+            hx-vars="page:${page + 1}, table:'${selectTable}', query:'${query}'"
+            hx-trigger="revealed" 
+            hx-swap="afterend">
+          </tr>`;
+    }
     res.send(rowsHtml);
 });
 
 app.post("/list", async (req, res) => {
+    console.log(req.body.page);
     const selectTable = req.body.table;
     const page = parseInt(req.body.page || "1");
     const limit = 20;
@@ -108,16 +108,19 @@ app.post("/list", async (req, res) => {
     const rows = await table.findAll({ offset, limit });
 
     let rowsHtml = parseRowsToTable(rows);
-
-    const nextPage = page + 1;
-
-    // Add the infinite scroll row -> https://htmx.org/examples/infinite-scroll/
-    rowsHtml += `
-      <tr hx-get="/list?page=${nextPage}&table=${selectTable}" 
-          hx-trigger="revealed" 
-          hx-swap="beforeend" 
-          hx-target="#tableBody">
+    // check if it's not ended
+    if (rows.length >= limit) {
+        // Add the infinite scroll row -> https://htmx.org/examples/infinite-scroll/
+        rowsHtml += `
+        <tr hx-post="/list" 
+        hx-vars="page:${page + 1}, table:'${selectTable}'"
+        hx-trigger="revealed" 
+        hx-swap="afterend">
       </tr>`;
+    }
+    // console.log(rowsHtml);
+    // console.log("ASHJFHKGLHJAGJHLGASHSGAKHJG\n\n\n\n\n\n\n\n\n\n\n\n\n");
+    console.log(`Page: ${page}, Offset: ${offset}, Rows Fetched: ${rows.length}`);
 
     res.send(rowsHtml);
 });
