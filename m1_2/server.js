@@ -39,7 +39,7 @@ app.post("/upload", upload.single("csvFile"), async (req, res) => {
         .pipe(csv())
         .on("data", (row) => {
             let value = Object.values(row);
-            value.shift(); // remove the index column value
+            //value.shift(); // remove the index column value
             // map out the columns for the object to insert
             const rowObject = {};
             for (let i = 0; i < modelAttributes.length; i++) {
@@ -53,10 +53,11 @@ app.post("/upload", upload.single("csvFile"), async (req, res) => {
                 await TableCsv.bulkCreate(dataToInsert);
                 console.log("end");
             } catch (err) {
-                console.error("Error inserting data:", err);
+                console.error("Erro inserindo na base de dados:", err);
             }
         })
         .on("error", (err) => {
+            console.log("deu ruim");
             console.error(err);
         });
 });
