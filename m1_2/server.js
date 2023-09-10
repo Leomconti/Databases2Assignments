@@ -37,10 +37,14 @@ app.post("/upload", upload.single("csvFile"), async (req, res) => {
     fs.createReadStream(path)
         .pipe(csv())
         .on("data", (row) => {
-            dataToInsert.push(row);
+            let value = Object.values(row);
+            value.shift(); // remove the index column value
+            //console.log(value);
+            dataToInsert.push(Object.values(value));
         })
         .on("end", async () => {
             try {
+                console.log(dataToInsert);
                 await TableCsv.bulkCreate(dataToInsert);
                 console.log("end");
             } catch (err) {

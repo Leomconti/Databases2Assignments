@@ -5,8 +5,7 @@ const TableCsv = sequelize.define(
     "TableCsv",
     {
         user_id: {
-            type: DataTypes.INTEGER,
-            autoIncrement: true,
+            type: DataTypes.STRING,
             primaryKey: true,
         },
         first_name: {
@@ -25,12 +24,14 @@ const TableCsv = sequelize.define(
         },
         phone: {
             type: DataTypes.STRING,
+            allowNull: true,
         },
         date_of_birth: {
             type: DataTypes.DATEONLY,
         },
         job_title: {
             type: DataTypes.STRING,
+            allowNull: true,
         },
     },
     {
