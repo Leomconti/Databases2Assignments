@@ -30,21 +30,26 @@ app.get("/", (req, res) => {
 app.post("/upload", upload.single("csvFile"), async (req, res) => {
     const file = req.file;
     const path = file.path;
-    allData = [];
-    // reading the uploaded CSV file
+
     const dataToInsert = [];
+    // get the attributes to map the csv
+    const modelAttributes = Object.keys(TableCsv.getAttributes());
 
     fs.createReadStream(path)
         .pipe(csv())
         .on("data", (row) => {
             let value = Object.values(row);
             value.shift(); // remove the index column value
-            //console.log(value);
-            dataToInsert.push(Object.values(value));
+            // map out the columns for the object to insert
+            const rowObject = {};
+            for (let i = 0; i < modelAttributes.length; i++) {
+                rowObject[modelAttributes[i]] = value[i];
+            }
+
+            dataToInsert.push(rowObject);
         })
         .on("end", async () => {
             try {
-                console.log(dataToInsert);
                 await TableCsv.bulkCreate(dataToInsert);
                 console.log("end");
             } catch (err) {

@@ -6,7 +6,6 @@ const TableCsv = sequelize.define(
     {
         user_id: {
             type: DataTypes.STRING,
-            primaryKey: true,
         },
         first_name: {
             type: DataTypes.STRING,
