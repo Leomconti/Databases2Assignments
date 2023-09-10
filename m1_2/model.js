@@ -39,6 +39,6 @@ const TableCsv = sequelize.define(
     }
 );
 
-TableCsv.sync({ force: true });
+TableCsv.sync({ force: false });
 
 module.exports = TableCsv;

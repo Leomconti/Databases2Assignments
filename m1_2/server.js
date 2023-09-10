@@ -33,11 +33,11 @@ app.post("/upload", upload.single("csvFile"), async (req, res) => {
     const dataToInsert = [];
     const modelAttributes = Object.keys(TableCsv.getAttributes());
 
-    // Convert the buffer to a readable stream
+    //  create the readable from the buffer
     const readableStream = new Readable({
         read() {
             this.push(fileBuffer);
-            this.push(null); // Indicates EOF
+            this.push(null); // end of file!
         },
     });
 
@@ -64,6 +64,76 @@ app.post("/upload", upload.single("csvFile"), async (req, res) => {
         });
 });
 
+app.post("/search", async (req, res) => {
+    const query = req.body.query;
+    const selectTable = req.body.table;
+    const page = parseInt(req.body.page || "1");
+    const limit = 20;
+    const offset = (page - 1) * limit;
+    const table = getTableModel(selectTable);
+
+    const rows = await table.findAll({
+        where: {
+            first_name: {
+                [Op.substring]: query,
+            },
+        },
+        offset: offset,
+        limit: limit,
+    });
+
+    let rowsHtml = parseRowsToTable(rows);
+
+    const nextPage = page + 1;
+
+    // add the infinite scroll logic on the last cell, we send the data that's needed
+    rowsHtml += `
+      <tr hx-post="/search?query=${query}&page=${nextPage}&table=${selectTable}"  
+          hx-trigger="revealed" 
+          hx-swap="beforeend" 
+          hx-target="#tableBody">
+      </tr>`;
+
+    res.send(rowsHtml);
+});
+
+app.post("/list", async (req, res) => {
+    const selectTable = req.body.table;
+    const page = parseInt(req.body.page || "1");
+    const limit = 20;
+    const offset = (page - 1) * limit;
+
+    const table = getTableModel(selectTable);
+
+    const rows = await table.findAll({ offset, limit });
+
+    let rowsHtml = parseRowsToTable(rows);
+
+    const nextPage = page + 1;
+
+    // Add the infinite scroll row -> https://htmx.org/examples/infinite-scroll/
+    rowsHtml += `
+      <tr hx-get="/list?page=${nextPage}&table=${selectTable}" 
+          hx-trigger="revealed" 
+          hx-swap="beforeend" 
+          hx-target="#tableBody">
+      </tr>`;
+
+    res.send(rowsHtml);
+});
+
+app.post("/tableHeaders", (req, res) => {
+    const selectTable = req.body.table;
+    const table = getTableModel(selectTable);
+
+    let headersHtml = "";
+
+    for (let key in table.getAttributes()) {
+        headersHtml += `<th id="${key}">${key}</th>`; // rawAttributes is deprecated, so we use getAttributes, test it out before!
+    }
+    res.send(`<tr>${headersHtml}</tr>`);
+});
+
 app.get("/tables", async (req, res) => {
     let optionsHTML = "";
     let [tables] = await sequelize.query("SHOW TABLES");
@@ -86,43 +156,6 @@ app.get("/tables", async (req, res) => {
         >
             ${optionsHTML}
         </select>`);
-});
-
-app.post("/search", async (req, res) => {
-    const query = req.body.query;
-    const selectTable = req.body.table;
-    const table = getTableModel(selectTable);
-
-    rows = await table.findAll({
-        where: {
-            first_name: {
-                [Op.substring]: query, // substring would be %query% look at: https://sequelize.org/docs/v6/core-concepts/model-querying-basics/
-            },
-        },
-    });
-
-    res.send(`${parseRowsToTable(rows)}`);
-});
-
-app.post("/list", async (req, res) => {
-    const selectTable = req.body.table;
-    const table = getTableModel(selectTable);
-
-    rows = await table.findAll();
-
-    res.send(`${parseRowsToTable(rows)}`);
-});
-
-app.post("/tableHeaders", (req, res) => {
-    const selectTable = req.body.table;
-    const table = getTableModel(selectTable);
-
-    let headersHtml = "";
-
-    for (let key in table.getAttributes()) {
-        headersHtml += `<th id="${key}">${key}</th>`; // rawAttributes is deprecated, so we use getAttributes, test it out before!
-    }
-    res.send(`<tr>${headersHtml}</tr>`);
 });
 
 app.listen(port, () => {
@@ -162,36 +195,4 @@ function parseRowsToTable(rows) {
 //         optionsHTML += `<option value="${key}">${key}</option>`;
 //     }
 //     res.send(optionsHTML);
-// });
-
-// app.post("/list", async (req, res) => {
-//     const table = getTableModel(req.body.table);
-//     const page = parseInt(req.body.page || "1"); // get's the page from the front, use 1 as default
-//     const limit = 10; // always limit 10, to lower complexity
-
-//     const offset = (page - 1) * limit; // calculate the offset for the query
-
-//     const rows = await table.findAll({
-//         // use offset and limit for pagination
-//         offset: offset,
-//         limit: limit,
-//     });
-//     const totalRows = await table.count(); // get the total rows to calculate the pages for the frontend
-
-//     const totalPages = Math.ceil(totalRows / limit); // get and round the pages based on the limit (10)
-
-//     // we send the data, as the html for the table, page, and the totalPages
-//     let tosend = {
-//         data: `<div id="htmxData">${parseRowsToTable(rows)}</div>`,
-//         page: page,
-//         totalPages: totalPages,
-//     };
-
-//     console.log(tosend);
-
-//     res.send({
-//         data: parseRowsToTable(rows),
-//         page: page,
-//         totalPages: totalPages,
-//     });
 // });
