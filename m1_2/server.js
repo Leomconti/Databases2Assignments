@@ -32,7 +32,7 @@ app.post("/upload", upload.single("csvFile"), async (req, res) => {
     const fileBuffer = file.buffer;
 
     const dataToInsert = [];
-    const modelAttributes = Object.keys(TableCsv.getAttributes());
+    const modelAttributes = Object.keys(TableCsv.getAttributes()); // grab the attributes to create the map
 
     //  create the readable from the buffer
     const readableStream = new Readable({
@@ -45,7 +45,7 @@ app.post("/upload", upload.single("csvFile"), async (req, res) => {
     readableStream
         .pipe(csv())
         .on("data", (row) => {
-            let value = Object.values(row);
+            let value = Object.values(row); // asdads123132, leonardo, mosimann ...
             const rowObject = {};
             for (let i = 0; i < modelAttributes.length; i++) {
                 rowObject[modelAttributes[i]] = value[i];
@@ -57,8 +57,8 @@ app.post("/upload", upload.single("csvFile"), async (req, res) => {
                 await TableCsv.bulkCreate(dataToInsert);
                 res.send('<div class="alert alert-success">Dados inseridos com sucesso!</div>');
             } catch (err) {
-                console.log("QUE PORRA DE ERRO QUE DEU????");
-                console.log(err);
+                // console.log("QUE ERRO QUE DEU????");
+                // console.log(err);
                 res.send('<div class="alert alert-danger">Erro inserindo os dados na base.</div>');
             }
         })
@@ -78,7 +78,7 @@ app.post("/search", async (req, res) => {
     const rows = await table.findAll({
         where: {
             first_name: {
-                [Op.substring]: query,
+                [Op.substring]: query, // LIKE %...%
             },
         },
         offset: offset,
@@ -102,7 +102,6 @@ app.post("/search", async (req, res) => {
 });
 
 app.post("/list", async (req, res) => {
-    console.log(req.body.page);
     const selectTable = req.body.table;
     const page = parseInt(req.body.page || "1");
     const limit = 20;
@@ -125,7 +124,7 @@ app.post("/list", async (req, res) => {
     }
     // console.log(rowsHtml);
     // console.log("ASHJFHKGLHJAGJHLGASHSGAKHJG\n\n\n\n\n\n\n\n\n\n\n\n\n");
-    console.log(`Page: ${page}, Offset: ${offset}, Rows Fetched: ${rows.length}`);
+    // console.log(`Page: ${page}, Offset: ${offset}, Rows: ${rows.length}`);
 
     res.send(rowsHtml);
 });
@@ -186,15 +185,22 @@ function getTableModel(tableName) {
 }
 
 function parseRowsToTable(rows) {
+    // function to map out values to table cells
+
+    // console.log(rows);
+
     let rowsHtml = "";
     let row = rows.map((r) => {
+        // [r: dataValue, r:dataValue,...]
         return r.dataValues;
     });
 
     row.forEach((value) => {
+        // id: 1, user_id:sadads, first_name:'asdasda'...
         let columnsHtml = "";
 
         Object.values(value).map((v) => {
+            // map to get each value and put in the cell
             columnsHtml += `<td>${v}</td>`;
         });
         rowsHtml += `<tr>${columnsHtml}</tr>`;
