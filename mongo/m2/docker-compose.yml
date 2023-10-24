@@ -2,7 +2,7 @@ version: "3"
 
 services:
     mysql:
-        container_name: db_m2
+        container_name: mysql
         image: mysql:latest
         environment:
             MYSQL_DATABASE: db_m2
@@ -13,7 +13,7 @@ services:
             - 3306:3306
     mongo:
         image: mongo:latest
-        container_name: local_mongo
+        container_name: mongo
         ports:
             - "27017:27017"
         environment:
