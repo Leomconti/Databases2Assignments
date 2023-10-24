@@ -11,16 +11,16 @@ services:
             MYSQL_ROOT_PASSWORD: admin123
         ports:
             - 3306:3306
+        volumes:
+            - ./test_db-master:/data   # Add this line
     mongo:
-        image: mongo:latest
         container_name: mongo
+        image: mongo:latest
         ports:
             - "27017:27017"
         environment:
             MONGO_INITDB_ROOT_USERNAME: root
             MONGO_INITDB_ROOT_PASSWORD: examplepassword
-        volumes:
-            - mongo-data:/data/db
 
 volumes:
     mongo-data:
