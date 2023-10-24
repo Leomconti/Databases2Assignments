@@ -1,0 +1,26 @@
+version: "3"
+
+services:
+    mysql:
+        container_name: db_m2
+        image: mysql:latest
+        environment:
+            MYSQL_DATABASE: db_m2
+            MYSQL_USER: admin
+            MYSQL_PASSWORD: admin123
+            MYSQL_ROOT_PASSWORD: admin123
+        ports:
+            - 3306:3306
+    mongo:
+        image: mongo:latest
+        container_name: local_mongo
+        ports:
+            - "27017:27017"
+        environment:
+            MONGO_INITDB_ROOT_USERNAME: root
+            MONGO_INITDB_ROOT_PASSWORD: examplepassword
+        volumes:
+            - mongo-data:/data/db
+
+volumes:
+    mongo-data:

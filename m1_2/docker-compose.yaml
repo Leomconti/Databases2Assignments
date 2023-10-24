@@ -7,7 +7,7 @@ services:
         environment:
             MYSQL_DATABASE: db_m1_2
             MYSQL_USER: admin
-            MYSQL_PASSWORD: admin123
+            MYSQL_PASSWOR`D: admin123
             MYSQL_ROOT_PASSWORD: admin123
         ports:
             - 3306:3306
