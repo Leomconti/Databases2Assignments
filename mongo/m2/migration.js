@@ -13,32 +13,34 @@ testMongo();
 // Aqui na query a gnt vai usar o group_concat (no postgres tem ARRAY_AGG) para juntar os dados de cada tabela em uma string só,
 // o que fica mais facil para transformar em list depois
 query = `
-    SELECT 
-        e.emp_no,
-        e.birth_date,
-        e.first_name,
-        e.last_name,
-        e.gender,
-        e.hire_date,
+SELECT 
+    e.emp_no,
+    e.birth_date,
+    e.first_name,
+    e.last_name,
+    e.gender,
+    e.hire_date,
 
-        GROUP_CONCAT(DISTINCT CONCAT(de.dept_no, ':', d.dept_name, ':', de.from_date, ':', de.to_date)) AS depts,
+    GROUP_CONCAT(DISTINCT CONCAT(de.dept_no, ':', d.dept_name, ':', de.from_date, ':', de.to_date)) AS depts,
 
-        GROUP_CONCAT(DISTINCT CONCAT(dm.dept_no, ':', d.dept_name, ':', dm.from_date, ':', dm.to_date)) AS managers,
+    GROUP_CONCAT(DISTINCT CONCAT(dm.dept_no, ':', d.dept_name, ':',  m.emp_no, ':', m.first_name, ':', m.last_name, ':', dm.from_date, ':', dm.to_date)) AS managers,
 
-        GROUP_CONCAT(DISTINCT CONCAT(t.title, ':', t.from_date, ':', t.to_date)) AS titles,
+    GROUP_CONCAT(DISTINCT CONCAT(t.title, ':', t.from_date, ':', t.to_date)) AS titles,
 
-        GROUP_CONCAT(DISTINCT CONCAT(s.salary, ':', s.from_date, ':', s.to_date)) AS salaries
+    GROUP_CONCAT(DISTINCT CONCAT(s.salary, ':', s.from_date, ':', s.to_date)) AS salaries
 
-    FROM employees e
+FROM employees e
 
-    LEFT JOIN dept_emp de ON e.emp_no = de.emp_no
-    LEFT JOIN departments d ON de.dept_no = d.dept_no
-    LEFT JOIN dept_manager dm ON de.dept_no = dm.dept_no AND de.from_date <= dm.to_date AND de.to_date >= dm.from_date
-    LEFT JOIN titles t ON e.emp_no = t.emp_no
-    LEFT JOIN salaries s ON e.emp_no = s.emp_no
+LEFT JOIN dept_emp de ON e.emp_no = de.emp_no
+LEFT JOIN departments d ON de.dept_no = d.dept_no
+LEFT JOIN dept_manager dm ON de.dept_no = dm.dept_no AND de.from_date <= dm.to_date AND de.to_date >= dm.from_date
+LEFT JOIN employees m ON dm.emp_no = m.emp_no  -- Joining again with employees for manager details
+LEFT JOIN titles t ON e.emp_no = t.emp_no
+LEFT JOIN salaries s ON e.emp_no = s.emp_no
 
-    GROUP BY e.emp_no, e.birth_date, e.first_name, e.last_name, e.gender, e.hire_date
-    LIMIT 10
+GROUP BY e.emp_no, e.birth_date, e.first_name, e.last_name, e.gender, e.hire_date
+LIMIT 10
+
 `;
 
 async function executeRawQueryAndProcess(query) {
@@ -63,8 +65,9 @@ async function executeRawQueryAndProcess(query) {
                     : [],
                 managers: row.managers
                     ? row.managers.split(",").map((manager) => {
-                          const [dept_no, dept_name, from_date, to_date] = manager.split(":");
-                          return { dept_no, dept_name, from_date, to_date };
+                          const [dept_no, dept_name, emp_no, first_name, last_name, from_date, to_date] =
+                              manager.split(":");
+                          return { dept_no, dept_name, emp_no, first_name, last_name, from_date, to_date };
                       })
                     : [],
                 titles: row.titles
@@ -97,9 +100,41 @@ async function executeRawQueryAndProcess(query) {
     }
 }
 
+// Função para criar os índices
+async function createIndexes() {
+    try {
+        const db = mongoConn.db("m2");
+        const employeesCollection = db.collection("employees");
+
+        // a) Retorne todos os employees dado nome ou ID de determinado manager.
+        employeesCollection.createIndex({ "managers.first_name": 1, "managers.last_name": 1 });
+        employeesCollection.createIndex({ "managers.emp_no": 1 });
+
+        // b) Dado um title, recupere todos os employees que já estiveram vinculados a este title.
+        employeesCollection.createIndex({ "titles.title": 1 });
+
+        // c) Dado o nome de um departamento, retorne todos os employees vinculados a este departamento.
+        employeesCollection.createIndex({ "depts.dept_name": 1 });
+
+        // d) Retorne a média salarial de todos os employees por departamento.
+        employeesCollection.createIndex({ "dept_name.dept_no": 1, "salaries.salary": 1 });
+
+        console.log("Índices criados com sucesso.");
+    } catch (error) {
+        console.error("Erro ao criar índices:", error);
+    } finally {
+        client.close();
+    }
+}
+
 async function run() {
+    const addIndex = await createIndexes();
+    console.log("Os indices foram criados para a collection employees");
     const result = await executeRawQueryAndProcess(query);
-    console.log("Finished!");
+    console.log("Finalizou insercao dos dados na collection employees");
+    mongoConn.close();
+    // sair se n ele fica hanging aq
+    // process.exit();
 }
 
 run();
