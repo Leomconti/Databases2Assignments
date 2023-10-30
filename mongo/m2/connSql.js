@@ -1,7 +1,7 @@
 const { Sequelize } = require("sequelize");
 
 const MYSQL_IP = "localhost";
-const MYSQL_LOGIN = "root";
+const MYSQL_LOGIN = "root"; // a db employees so vai aparecer no root!!
 const MYSQL_PASSWORD = "admin123";
 const DATABASE = "employees";
 const sqlConnection = new Sequelize(DATABASE, MYSQL_LOGIN, MYSQL_PASSWORD, {

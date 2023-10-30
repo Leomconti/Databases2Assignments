@@ -16,8 +16,6 @@ async function testMongo() {
         }
     } catch (error) {
         console.error("Error connecting to MongoDB:", error);
-    } finally {
-        await mongoConn.close();
     }
 }
 
