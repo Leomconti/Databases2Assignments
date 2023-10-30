@@ -53,25 +53,35 @@ async function executeRawQueryAndProcess(query) {
                 hire_date: row.hire_date,
 
                 // para os seguintes, vamos fazer o split baseado no que setamos acima na query com o GROUP_CONCAT
-                depts: row.depts.split(",").map((dept) => {
-                    const [dept_no, dept_name, from_date, to_date] = dept.split(":");
-                    return { dept_no, dept_name, from_date, to_date };
-                }),
-                managers: row.managers.split(",").map((manager) => {
-                    const [dept_no, dept_name, from_date, to_date] = manager.split(":");
-                    return { dept_no, dept_name, from_date, to_date };
-                }),
-                titles: row.titles.split(",").map((title) => {
-                    const [title_name, from_date, to_date] = title.split(":");
-                    return { title: title_name, from_date, to_date };
-                }),
-                salaries: row.salaries.split(",").map((salary) => {
-                    const [salary_amount, from_date, to_date] = salary.split(":");
-                    return { salary: parseInt(salary_amount), from_date, to_date };
-                }),
+                // teve q tacar o ? [] se nao em null dava ruim
+                depts: row.depts
+                    ? row.depts.split(",").map((dept) => {
+                          const [dept_no, dept_name, from_date, to_date] = dept.split(":");
+                          return { dept_no, dept_name, from_date, to_date };
+                      })
+                    : [],
+                managers: row.managers
+                    ? row.managers.split(",").map((manager) => {
+                          const [dept_no, dept_name, from_date, to_date] = manager.split(":");
+                          return { dept_no, dept_name, from_date, to_date };
+                      })
+                    : [],
+                titles: row.titles
+                    ? row.titles.split(",").map((title) => {
+                          const [title_name, from_date, to_date] = title.split(":");
+                          return { title: title_name, from_date, to_date };
+                      })
+                    : [],
+                salaries: row.salaries
+                    ? row.salaries.split(",").map((salary) => {
+                          const [salary_amount, from_date, to_date] = salary.split(":");
+                          return { salary: parseInt(salary_amount), from_date, to_date };
+                      })
+                    : [],
             };
         });
 
+        console.log(JSON.stringify(mongoDocs, null, 2)); // usando stringify pra fazer o "pretty print" e mostrar os aninhamentos tb
         return mongoDocs;
     } catch (error) {
         console.error("Error executing raw SQL query:", error);
@@ -79,10 +89,12 @@ async function executeRawQueryAndProcess(query) {
     }
 }
 console.log("A");
-const result = executeRawQueryAndProcess(query);
-console.log("B");
-console.log(result);
-console.log("C");
+
+async function run() {
+    const result = await executeRawQueryAndProcess(query);
+}
+
+run();
 
 // coiso mongo:
 // const mongoCollection = mongoConn.collection('employees');
