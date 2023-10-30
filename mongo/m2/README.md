@@ -26,6 +26,16 @@ select * from salaries LIMIT 10;
 node migration.js
 ```
 
+## 3. About indexes
+
+- We cannot index two arrays inside the collection, and while trying to do the last index, we got the following error:
+
+```shell
+Error executing raw SQL query: MongoBulkWriteError: cannot index parallel arrays [salaries] [depts]
+```
+
+- Than, so instead of not creating it, we'll create a field, called curr_dept, which will represent the current department the employee is working at, so we can calculate the aggreagate based on that. Or, maybe, we could add curr_salary and curr_dept, which would be better.
+
 
 # Schema we've defined for the Mongo Document, it ended up not being used in the code but it's nce to have here,
 - Notice that schemas other than employeeSchema are just models for the values that will be in the lists
@@ -67,6 +77,8 @@ employeeSchema = {
     last_name: last_name,
     gender: gender,
     hire_date: hire_date,
+    curr_dept: curr_dept,
+    curr_salary: curr_salary,
     depts: deps_list,
     managers: managers_list,
     titles: title_list,

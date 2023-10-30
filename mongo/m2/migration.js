@@ -15,6 +15,8 @@ SELECT
     e.last_name,
     e.gender,
     e.hire_date,
+    currDept.dept_no AS curr_dept_no,
+    currSalary.salary AS curr_salary,
 
     GROUP_CONCAT(DISTINCT CONCAT(de.dept_no, ':', d.dept_name, ':', de.from_date, ':', de.to_date)) AS depts,
 
@@ -32,8 +34,10 @@ LEFT JOIN dept_manager dm ON de.dept_no = dm.dept_no AND de.from_date <= dm.to_d
 LEFT JOIN employees m ON dm.emp_no = m.emp_no  -- Joining again with employees for manager details
 LEFT JOIN titles t ON e.emp_no = t.emp_no
 LEFT JOIN salaries s ON e.emp_no = s.emp_no
+LEFT JOIN dept_emp currDept ON e.emp_no = currDept.emp_no AND currDept.to_date = '9999-01-01'
+LEFT JOIN salaries currSalary ON e.emp_no = currSalary.emp_no AND currSalary.to_date = '9999-01-01'
 
-GROUP BY e.emp_no, e.birth_date, e.first_name, e.last_name, e.gender, e.hire_date
+GROUP BY e.emp_no, e.birth_date, e.first_name, e.last_name, e.gender, e.hire_date, curr_dept_no, curr_salary
 `;
 
 async function executeRawQueryAndProcess(query) {
@@ -47,6 +51,8 @@ async function executeRawQueryAndProcess(query) {
                 last_name: row.last_name,
                 gender: row.gender,
                 hire_date: row.hire_date,
+                curr_dept_no: row.curr_dept_no,
+                curr_salary: row.curr_salary,
 
                 // para os seguintes, vamos fazer o split baseado no que setamos acima na query com o GROUP_CONCAT
                 // teve q tacar o ? [] se nao em null dava ruim
@@ -109,7 +115,7 @@ async function createIndexes() {
         employeesCollection.createIndex({ "depts.dept_name": 1 });
 
         // d) Retorne a média salarial de todos os employees por departamento.
-        employeesCollection.createIndex({ "dept_name.dept_no": 1, "salaries.salary": 1 });
+        employeesCollection.createIndex({ curr_dept_no: 1, curr_salary: 1 });
         return true;
     } catch (error) {
         console.error("Erro ao criar índices:", error);
@@ -120,15 +126,15 @@ async function createIndexes() {
 async function run() {
     testSql();
     testMongo();
+    const result = await executeRawQueryAndProcess(query);
+    console.log("Finalizou insercao dos dados na collection employees");
 
     const addIndex = await createIndexes();
     if (!addIndex) {
         console.error("Erro ao criar índices");
-        process.exit();
     }
     console.log("Os indices foram criados para a collection employees");
-    const result = await executeRawQueryAndProcess(query);
-    console.log("Finalizou insercao dos dados na collection employees");
+
     mongoConn.close();
     // sair se n ele fica hanging aq
     process.exit();
