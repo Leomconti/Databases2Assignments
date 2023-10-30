@@ -2,9 +2,13 @@
 
 -   Let's start the containers for Mongo and MySql, and run the shell script that will dump data into the database.
 
+-   To insert the data into MySQL you **need** to add the folder **test_db-master** to this repository, which can be found here: https://github.com/datacharmer/test_db
+
 ```shell
 docker compose up -d
+```
 
+```shell
 sh add_to_db.sh
 ```
 
@@ -89,7 +93,7 @@ db.employees.aggregate([
 
 # Extra:
 
-## Schema we've defined for the Mongo Document, it ended up not being used in the code but it's nce to have here,
+## Schema we've defined for the Mongo Document, it ended up not being used in the code but it's nice to have here
 
 -   Notice that schemas other than employeeSchema are just models for the values that will be in the lists
 
