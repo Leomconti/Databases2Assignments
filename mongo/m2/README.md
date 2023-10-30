@@ -25,3 +25,52 @@ select * from salaries LIMIT 10;
 ```shell
 node migration.js
 ```
+
+
+# Schema we've defined for the Mongo Document, it ended up not being used in the code but it's nce to have here,
+- Notice that schemas other than employeeSchema are just models for the values that will be in the lists
+```javascript
+
+managerSchema = {
+    dept_no: dept_no_manager,
+    dept_name: dept_name_manager,
+    emp_no: manager_no,
+    first_name: manager_first,
+    last_name: manager_last,
+    from_date: from_date_manager,
+    to_date: to_date_manager,
+};
+
+deptsSchema = {
+    dept_no: dept_no,
+    dept_name: dept_name,
+    from_date: from_date,
+    to_date: to_date,
+};
+
+titlesSchema = {
+    title: title,
+    from_date: from_date_title,
+    to_date: to_date_title,
+};
+
+salarySchema = {
+    salary: salary,
+    from_date: from_date_salary,
+    to_date: to_date_salary,
+};
+
+employeeSchema = {
+    emp_no: emp_no,
+    birth_date: birth_date,
+    first_name: first_name,
+    last_name: last_name,
+    gender: gender,
+    hire_date: hire_date,
+    depts: deps_list,
+    managers: managers_list,
+    titles: title_list,
+    salaries: salaries_list,
+};
+
+```
