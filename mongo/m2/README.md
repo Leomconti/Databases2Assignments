@@ -34,57 +34,62 @@ node migration.js
 Error executing raw SQL query: MongoBulkWriteError: cannot index parallel arrays [salaries] [depts]
 ```
 
--   Than, so instead of not creating it, we'll create a field, called curr_dept, which will represent the current department the employee is working at, so we can calculate the aggreagate based on that. Or, maybe, we could add curr_salary and curr_dept, which would be better.
+-   Than, so instead of not creating it, we'll create a field, called curr_dept, which will represent the current department the employee is working at, so we can calculate the aggreagate based on that, and also the current salary. Otherwise, there would be a lot to be done, like matching department and salaries by from_date and end_date, just to grab the average query, which I don't think was the objective of the question.
 
 ### Queries to run on MongoDB:
 
-1.
+-   Paste the following in shell to enter the mongo database, and use db m2
 
 ```shell
-{db.employees.find({ "managers.emp_no": "110511" }).limit(3)
+mongosh mongodb://root:examplepassword@localhost:27017
+```
+
+```shell
+use m2
+```
+
+1.
+
+```javascript
+db.employees.find({ "managers.emp_no": "110511" });
 ```
 
 2.
 
-```shell
+```javascript
 db.employees.find({
-    $and: [
-        { "managers.first_name": "DeForest" },
-        { "managers.last_name": "Hagimont" }
-    ]
-}).limit(3)
+    $and: [{ "managers.first_name": "DeForest" }, { "managers.last_name": "Hagimont" }],
+});
 ```
 
 3.
 
-```shell
-db.employees.find({ "titles.title": "Senior Engineer" }).limit(3)
+```javascript
+db.employees.find({ "titles.title": "Senior Engineer" });
 ```
 
 4.
 
-```shell
-db.employees.find({ "depts.dept_name": "Development" }).limit(3)
+```javascript
+db.employees.find({ "depts.dept_name": "Development" });
 ```
 
 5.
 
-```shell
+```javascript
 db.employees.aggregate([
     {
         $group: {
             _id: "$curr_dept_no",
             averageSalary: { $avg: "$curr_salary" },
-        }
+        },
     },
-    {
-        $limit: 3
-    }
-])
-
+]);
 ```
 
-# Schema we've defined for the Mongo Document, it ended up not being used in the code but it's nce to have here,
+# Extra:
+
+## Schema we've defined for the Mongo Document, it ended up not being used in the code but it's nce to have here,
 
 -   Notice that schemas other than employeeSchema are just models for the values that will be in the lists
 
