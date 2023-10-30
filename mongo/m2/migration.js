@@ -40,12 +40,9 @@ SELECT
 
 `;
 
-function run_query() {
-    sqlConnection.query(query, (err, mysqlResults) => {
-        // so pra ver oq tava bugando
-        if (err) throw err;
-
-        // aqui ja vamos criar os docs pro mongo baseado no que veio do mysql, ja faz o parse aq por row
+async function executeRawQueryAndProcess(query) {
+    try {
+        const [mysqlResults] = await sqlConnection.query(query);
         const mongoDocs = mysqlResults.map((row) => {
             return {
                 emp_no: row.emp_no,
@@ -54,6 +51,7 @@ function run_query() {
                 last_name: row.last_name,
                 gender: row.gender,
                 hire_date: row.hire_date,
+
                 // para os seguintes, vamos fazer o split baseado no que setamos acima na query com o GROUP_CONCAT
                 depts: row.depts.split(",").map((dept) => {
                     const [dept_no, dept_name, from_date, to_date] = dept.split(":");
@@ -73,18 +71,22 @@ function run_query() {
                 }),
             };
         });
+
         return mongoDocs;
-        // const mongoCollection = mongoConn.collection('employees');
-        // mongoCollection.insertMany(mongoDocs, (err, res) => {
-        //     if (err) throw err;
-        //     console.log("Number of documents inserted: " + res.insertedCount);
-        // });
-    });
+    } catch (error) {
+        console.error("Error executing raw SQL query:", error);
+        throw error;
+    }
 }
+console.log("A");
+const result = executeRawQueryAndProcess(query);
+console.log("B");
+console.log(result);
+console.log("C");
 
-async function insert_docs(docs) {
-    docs = await run_query(query);
-    console.log(docs);
-}
-
-insert_docs();
+// coiso mongo:
+// const mongoCollection = mongoConn.collection('employees');
+// mongoCollection.insertMany(mongoDocs, (err, res) => {
+//     if (err) throw err;
+//     console.log("Number of documents inserted: " + res.insertedCount);
+// });
