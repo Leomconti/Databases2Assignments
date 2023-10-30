@@ -114,8 +114,8 @@ async function createIndexes() {
         // c) Dado o nome de um departamento, retorne todos os employees vinculados a este departamento.
         employeesCollection.createIndex({ "depts.dept_name": 1 });
 
-        // d) Retorne a média salarial de todos os employees por departamento.
-        employeesCollection.createIndex({ curr_dept_no: 1, curr_salary: 1 });
+        // d) Testamos criacao de diversos tipos de index porem o Mongo nao fez o uso em nenhum dos casos, entao nao
+        // vamos adicionar indices para a realizacao da letra d)
         return true;
     } catch (error) {
         console.error("Erro ao criar índices:", error);
