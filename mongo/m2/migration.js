@@ -5,11 +5,6 @@ Dataset used: https://github.com/datacharmer/test_db
 const { sqlConnection, testSql } = require("./connSql");
 const { mongoConn, testMongo } = require("./connMongo");
 
-// opens SQL connection
-testSql();
-// opens mongo Connection
-testMongo();
-
 // Aqui na query a gnt vai usar o group_concat (no postgres tem ARRAY_AGG) para juntar os dados de cada tabela em uma string só,
 // o que fica mais facil para transformar em list depois
 query = `
@@ -39,8 +34,6 @@ LEFT JOIN titles t ON e.emp_no = t.emp_no
 LEFT JOIN salaries s ON e.emp_no = s.emp_no
 
 GROUP BY e.emp_no, e.birth_date, e.first_name, e.last_name, e.gender, e.hire_date
-LIMIT 10
-
 `;
 
 async function executeRawQueryAndProcess(query) {
@@ -85,8 +78,7 @@ async function executeRawQueryAndProcess(query) {
             };
         });
 
-        // se tentar printar muito grande, da erro !! cuidado
-        // console.log(JSON.stringify(mongoDocs, null, 2)); // usando stringify pra fazer o "pretty print" e mostrar os aninhamentos tb
+        // console.log(JSON.stringify(mongoDocs, null, 2)); // usando stringify pra fazer o "pretty print" e mostrar os aninhamentos tb, ele nao printa muitos registros!
 
         const mongoCollection = mongoConn.db("m2").collection("employees");
 
@@ -118,23 +110,28 @@ async function createIndexes() {
 
         // d) Retorne a média salarial de todos os employees por departamento.
         employeesCollection.createIndex({ "dept_name.dept_no": 1, "salaries.salary": 1 });
-
-        console.log("Índices criados com sucesso.");
+        return true;
     } catch (error) {
         console.error("Erro ao criar índices:", error);
-    } finally {
-        client.close();
+        return false;
     }
 }
 
 async function run() {
+    testSql();
+    testMongo();
+
     const addIndex = await createIndexes();
+    if (!addIndex) {
+        console.error("Erro ao criar índices");
+        process.exit();
+    }
     console.log("Os indices foram criados para a collection employees");
     const result = await executeRawQueryAndProcess(query);
     console.log("Finalizou insercao dos dados na collection employees");
     mongoConn.close();
     // sair se n ele fica hanging aq
-    // process.exit();
+    process.exit();
 }
 
 run();
