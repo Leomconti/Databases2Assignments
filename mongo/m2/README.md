@@ -28,19 +28,67 @@ node migration.js
 
 ## 3. About indexes
 
-- We cannot index two arrays inside the collection, and while trying to do the last index, we got the following error:
+-   We cannot index two arrays inside the collection, and while trying to do the last index, we got the following error:
 
 ```shell
 Error executing raw SQL query: MongoBulkWriteError: cannot index parallel arrays [salaries] [depts]
 ```
 
-- Than, so instead of not creating it, we'll create a field, called curr_dept, which will represent the current department the employee is working at, so we can calculate the aggreagate based on that. Or, maybe, we could add curr_salary and curr_dept, which would be better.
+-   Than, so instead of not creating it, we'll create a field, called curr_dept, which will represent the current department the employee is working at, so we can calculate the aggreagate based on that. Or, maybe, we could add curr_salary and curr_dept, which would be better.
 
+### Queries to run on MongoDB:
+
+1.
+
+```shell
+{db.employees.find({ "managers.emp_no": "110511" }).limit(3)
+```
+
+2.
+
+```shell
+db.employees.find({
+    $and: [
+        { "managers.first_name": "DeForest" },
+        { "managers.last_name": "Hagimont" }
+    ]
+}).limit(3)
+```
+
+3.
+
+```shell
+db.employees.find({ "titles.title": "Senior Engineer" }).limit(3)
+```
+
+4.
+
+```shell
+db.employees.find({ "depts.dept_name": "Development" }).limit(3)
+```
+
+5.
+
+```shell
+db.employees.aggregate([
+    {
+        $group: {
+            _id: "$curr_dept_no",
+            averageSalary: { $avg: "$curr_salary" },
+        }
+    },
+    {
+        $limit: 3
+    }
+])
+
+```
 
 # Schema we've defined for the Mongo Document, it ended up not being used in the code but it's nce to have here,
-- Notice that schemas other than employeeSchema are just models for the values that will be in the lists
-```javascript
 
+-   Notice that schemas other than employeeSchema are just models for the values that will be in the lists
+
+```javascript
 managerSchema = {
     dept_no: dept_no_manager,
     dept_name: dept_name_manager,
@@ -84,5 +132,4 @@ employeeSchema = {
     titles: title_list,
     salaries: salaries_list,
 };
-
 ```

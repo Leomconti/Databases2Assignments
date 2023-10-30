@@ -29,8 +29,8 @@ mongoConn.db("m2").collection("employees").find({ "depts.dept_name": "Developmen
 mongoConn.db("m2").collection("employees").aggregate([
     {
         $group: {
-            _id: "$depts.dept_no",
-            averageSalary: { $avg: "$salaries.salary" },
+            _id: "$curr_dept_no",
+            averageSalary: { $avg: "$curr_salary" },
         },
     },
     {
