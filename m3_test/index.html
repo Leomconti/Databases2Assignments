@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Database Information Display</title>
+        <link rel="stylesheet" href="style.css" />
+        <base href="http://127.0.0.1:5000/" />
+        <script
+            src="https://unpkg.com/htmx.org@1.9.8"
+            integrity="sha384-rgjA7mptc2ETQqXoYC3/zJvkU7K/aP44Y+z7xQuJiVnB/422P/Ak+F/AqFR7E4Wr"
+            crossorigin="anonymous"
+        ></script>
+    </head>
+    <body>
+        <form id="data-form" hx-post="/fetch-data" hx-target="#data-container" hx-trigger="submit">
+            <select name="database" hx-get="/get-keyspaces" hx-trigger="load" hx-target="this">
+                <option>Select Keyspace</option>
+            </select>
+            <select name="table" hx-get="/get-tables" hx-include="select[name='database']" hx-trigger="changed">
+                <option>Select Table</option>
+            </select>
+            <select
+                name="column"
+                hx-get="/get-columns"
+                hx-include="select[name='database'], select[name='table']"
+                hx-trigger="changed"
+            >
+                <option>Select Column</option>
+            </select>
+            <input type="text" name="filter" placeholder="Filter value" required />
+            <button type="submit">Query</button>
+        </form>
+
+        <div id="data-container">
+            <!-- Data will be loaded here -->
+        </div>
+    </body>
+</html>
