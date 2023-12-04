@@ -12,28 +12,44 @@
             crossorigin="anonymous"
         ></script>
     </head>
-    <body>
-        <form id="data-form" hx-post="/fetch-data" hx-target="#data-container" hx-trigger="submit">
-            <select name="database" hx-get="/get-keyspaces" hx-trigger="load" hx-target="this">
-                <option>Select Keyspace</option>
-            </select>
-            <select name="table" hx-get="/get-tables" hx-include="select[name='database']" hx-trigger="changed">
-                <option>Select Table</option>
-            </select>
-            <select
-                name="column"
-                hx-get="/get-columns"
-                hx-include="select[name='database'], select[name='table']"
-                hx-trigger="changed"
-            >
-                <option>Select Column</option>
-            </select>
-            <input type="text" name="filter" placeholder="Filter value" required />
-            <button type="submit">Query</button>
-        </form>
+</head>
+<body>
+    <div class="query-group">
+        <button hx-get="/employees-by-manager/JohnDoe?html=true" hx-target="#data-container">
+            Get Employees by Manager (HTML)
+        </button>
+        <button hx-get="/employees-by-manager/JohnDoe?html=false" hx-target="#data-container">
+            Get Employees by Manager (JSON)
+        </button>
+        <input type="text" class="parameter-input" placeholder="Manager Name" />
+        <button>Query</button>
+    </div>
 
-        <div id="data-container">
-            <!-- Data will be loaded here -->
-        </div>
-    </body>
+    <div class="query-group">
+        <button hx-get="/employees-by-dept/IT/2023-03-01?html=true" hx-target="#data-container">
+            Get Employees by Dept (HTML)
+        </button>
+        <button hx-get="/employees-by-dept/IT/2023-03-01?html=false" hx-target="#data-container">
+            Get Employees by Dept (JSON)
+        </button>
+        <input type="text" class="parameter-input" placeholder="Department Name" />
+        <input type="text" class="parameter-input" placeholder="Date (YYYY-MM-DD)" />
+        <button>Query</button>
+    </div>
+
+    <div class="query-group">
+        <button hx-get="/avg-salary-by-dept/IT?html=true" hx-target="#data-container">
+            Get Avg Salary by Dept (HTML)
+        </button>
+        <button hx-get="/avg-salary-by-dept/IT?html=false" hx-target="#data-container">
+            Get Avg Salary by Dept (JSON)
+        </button>
+        <input type="text" class="parameter-input" placeholder="Department Name" />
+        <button>Query</button>
+    </div>
+
+    <div id="data-container">
+        <!-- Data will be loaded here -->
+    </div>
+</body>
 </html>
