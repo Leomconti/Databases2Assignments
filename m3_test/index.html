@@ -15,41 +15,72 @@
 </head>
 <body>
     <div class="query-group">
-        <button hx-get="/employees-by-manager/JohnDoe?html=true" hx-target="#data-container">
-            Get Employees by Manager (HTML)
-        </button>
-        <button hx-get="/employees-by-manager/JohnDoe?html=false" hx-target="#data-container">
-            Get Employees by Manager (JSON)
-        </button>
-        <input type="text" class="parameter-input" placeholder="Manager Name" />
-        <button>Query</button>
+        <label>
+            <input type="checkbox" id="manager-html" checked>
+            HTML Format
+        </label>
+        <input type="text" id="manager-name" placeholder="Manager Emp No" />
+        <button onclick="queryData('employees-by-manager', 'manager')">Query</button>
     </div>
 
     <div class="query-group">
-        <button hx-get="/employees-by-dept/IT/2023-03-01?html=true" hx-target="#data-container">
-            Get Employees by Dept (HTML)
-        </button>
-        <button hx-get="/employees-by-dept/IT/2023-03-01?html=false" hx-target="#data-container">
-            Get Employees by Dept (JSON)
-        </button>
-        <input type="text" class="parameter-input" placeholder="Department Name" />
-        <input type="text" class="parameter-input" placeholder="Date (YYYY-MM-DD)" />
-        <button>Query</button>
+        <label>
+            <input type="checkbox" id="dept-html" checked>
+            HTML Format
+        </label>
+        <input type="text" id="dept-name" placeholder="Department Name" />
+        <input type="text" id="dept-date" placeholder="YYYY-MM-DD,YYYY-MM-DD *from, to" />
+        <button onclick="queryData('employees-by-dept', 'dept')">Query</button>
     </div>
 
     <div class="query-group">
-        <button hx-get="/avg-salary-by-dept/IT?html=true" hx-target="#data-container">
-            Get Avg Salary by Dept (HTML)
-        </button>
-        <button hx-get="/avg-salary-by-dept/IT?html=false" hx-target="#data-container">
-            Get Avg Salary by Dept (JSON)
-        </button>
-        <input type="text" class="parameter-input" placeholder="Department Name" />
-        <button>Query</button>
+        <label>
+            <input type="checkbox" id="salary-html" checked>
+            HTML Format
+        </label>
+        <input type="text" id="salary-dept" placeholder="Department Name" />
+        <button onclick="queryData('avg-salary-by-dept', 'salary')">Query</button>
     </div>
+
+    <div class="query-group">
+        <div>
+            <label>Select a table to show all data:</label>
+            <select id="table-selection">
+                <option value="employees_by_manager">Employees by Manager</option>
+                <option value="employees_by_dept">Employees by Department</option>
+                <option value="avg_salary_by_dept">Average Salary by Department</option>
+            </select>
+            <button onclick="queryData('show-all', 'all')">Show All</button>
+        </div>
+    </div>
+
 
     <div id="data-container">
         <!-- Data will be loaded here -->
     </div>
+
+    <script>
+        function queryData(endpoint, type) {
+            let htmlFormat = document.getElementById(type + '-html') ? document.getElementById(type + '-html').checked : true;
+            let url = '/' + endpoint;
+
+            if (type === 'manager') {
+                let managerName = document.getElementById('manager-name').value;
+                url += `/${managerName}?html=${htmlFormat}`;
+            } else if (type === 'dept') {
+                let deptName = document.getElementById('dept-name').value;
+                let deptDate = document.getElementById('dept-date').value;
+                url += `/${deptName}/${deptDate}?html=${htmlFormat}`;
+            } else if (type === 'salary') {
+                let deptName = document.getElementById('salary-dept').value;
+                url += `/${deptName}?html=${htmlFormat}`;
+            } else if (type === 'all') {
+                let tableName = document.getElementById('table-selection').value;
+                url += `/${tableName}?html=${htmlFormat}`;
+            }
+
+            htmx.ajax('GET', url, '#data-container');
+        }
+    </script>
 </body>
 </html>
