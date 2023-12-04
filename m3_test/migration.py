@@ -97,7 +97,7 @@ avg_salary_data = sql_cursor.fetchall()
 # 3. Insert the data into Cassandra
 print("Inserting manager_data into Cassandra")
 # print(len(manager_data)) # TEM 331 MIL
-for row in manager_data[:10]:
+for row in manager_data[:1000]:
     cassandra.execute(
         f"""
         INSERT INTO employees_by_manager (manager_emp_no, manager_first_name, manager_last_name, emp_no, birth_date, first_name, last_name, gender, hire_date) 
@@ -109,7 +109,7 @@ for row in manager_data[:10]:
 print("manager data inserted")
 
 print("Inserting dept_data into Cassandra")
-for row in dept_data[:100]:
+for row in dept_data[:1000]:
     cassandra.execute(
         f"""
         INSERT INTO employees_by_dept (dept_name, from_date, to_date, emp_no, birth_date, first_name, last_name, gender, hire_date)
@@ -119,7 +119,7 @@ for row in dept_data[:100]:
 print("dept data inserted")
 
 print("Inserting avg_salary_data into Cassandra")
-for row in avg_salary_data[:100]:
+for row in avg_salary_data[:1000]:
     cassandra.execute(
         f"""
         INSERT INTO avg_salary_by_dept (dept_name, average_salary)
