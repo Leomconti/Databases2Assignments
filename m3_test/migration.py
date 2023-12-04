@@ -109,7 +109,7 @@ for row in manager_data[:10]:
 print("manager data inserted")
 
 print("Inserting dept_data into Cassandra")
-for row in dept_data:
+for row in dept_data[:100]:
     cassandra.execute(
         f"""
         INSERT INTO employees_by_dept (dept_name, from_date, to_date, emp_no, birth_date, first_name, last_name, gender, hire_date)
@@ -119,7 +119,7 @@ for row in dept_data:
 print("dept data inserted")
 
 print("Inserting avg_salary_data into Cassandra")
-for row in avg_salary_data:
+for row in avg_salary_data[:100]:
     cassandra.execute(
         f"""
         INSERT INTO avg_salary_by_dept (dept_name, average_salary)

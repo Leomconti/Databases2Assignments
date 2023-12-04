@@ -12,12 +12,17 @@ cassandra = get_cassandra_session()
 @app.route("/employees-by-manager/<manager_emp_no>", methods=["GET"])
 def employees_by_manager(manager_emp_no):
     html = request.args.get("html", default="true") == "true"
-    query = "SELECT * FROM employees_by_manager WHERE manager_emp_no = %s"
-    rows = cassandra.execute(query, [manager_emp_no])
+    rows = cassandra.execute(
+        f"SELECT * FROM employees_by_manager WHERE manager_emp_no = {manager_emp_no}"
+    )
 
     if html:
         # Return HTML
         data_html = "<table>"
+        for col in rows[0]._fields:
+            print(col)
+            data_html += f"<th>{col}</th>"
+
         for row in rows:
             data_html += (
                 "<tr>"
@@ -38,12 +43,16 @@ def employees_by_dept(dept_name, date_range):
     html = request.args.get("html", default="true") == "true"
     from_date = date_range.split(",")[0]
     to_date = date_range.split(",")[1]
-    query = f"SELECT * FROM employees_by_dept WHERE dept_name = {dept_name} AND to_date = {to_date} AND from_date = {from_date}"
-    rows = cassandra.execute(query)
+    rows = cassandra.execute(
+        f"SELECT * FROM employees_by_dept WHERE dept_name = {dept_name} AND to_date = {to_date} AND from_date = {from_date}"
+    )
 
     if html:
         # Return HTML
         data_html = "<table>"
+        for col in rows[0]._fields:
+            print(col)
+            data_html += f"<th>{col}</th>"
         for row in rows:
             data_html += (
                 "<tr>"
@@ -62,12 +71,16 @@ def employees_by_dept(dept_name, date_range):
 @app.route("/avg-salary-by-dept/<dept_name>", methods=["GET"])
 def avg_salary_by_dept(dept_name):
     html = request.args.get("html", default="true") == "true"
-    query = f"SELECT * FROM avg_salary_by_dept WHERE dept_name = {dept_name}"
-    rows = cassandra.execute(query)
+    rows = cassandra.execute(
+        f"SELECT * FROM avg_salary_by_dept WHERE dept_name = {dept_name}"
+    )
 
     if html:
         # Return HTML
         data_html = "<table>"
+        for col in rows[0]._fields:
+            print(col)
+            data_html += f"<th>{col}</th>"
         for row in rows:
             data_html += (
                 "<tr>"
@@ -86,8 +99,8 @@ def avg_salary_by_dept(dept_name):
 @app.route("/show-all/<table_name>", methods=["GET"])
 def show_all(table_name):
     html = request.args.get("html", default="true") == "true"
-    valid_tables = ['employees_by_manager', 'employees_by_dept', 'avg_salary_by_dept']
-    
+    valid_tables = ["employees_by_manager", "employees_by_dept", "avg_salary_by_dept"]
+
     if table_name not in valid_tables:
         return "Invalid table name", 400
 
@@ -97,6 +110,9 @@ def show_all(table_name):
     if html:
         # Return HTML
         data_html = "<table>"
+        for col in rows[0]._fields:
+            print(col)
+            data_html += f"<th>{col}</th>"
         for row in rows:
             data_html += (
                 "<tr>"
