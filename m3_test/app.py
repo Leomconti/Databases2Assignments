@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from flask import Flask, jsonify, render_template_string, request
 from flask_cors import CORS
 
@@ -7,6 +9,7 @@ app = Flask(__name__)
 CORS(app)
 
 cassandra = get_cassandra_session()
+date_format = "%Y-%m-%d"
 
 
 @app.route("/employees-by-manager/<manager_emp_no>", methods=["GET"])
@@ -44,14 +47,13 @@ def employees_by_dept(dept_name, date_range):
     from_date = date_range.split(",")[0]
     to_date = date_range.split(",")[1]
     rows = cassandra.execute(
-        f"SELECT * FROM employees_by_dept WHERE dept_name = {dept_name} AND to_date = {to_date} AND from_date = {from_date}"
+        f"SELECT * FROM employees_by_dept WHERE dept_name = {dept_name} AND to_date <= {datetime.strptime(to_date, date_format)} AND from_date >= {datetime.strptime(from_date, date_format)}"
     )
 
     if html:
         # Return HTML
         data_html = "<table>"
         for col in rows[0]._fields:
-            print(col)
             data_html += f"<th>{col}</th>"
         for row in rows:
             data_html += (
@@ -79,7 +81,6 @@ def avg_salary_by_dept(dept_name):
         # Return HTML
         data_html = "<table>"
         for col in rows[0]._fields:
-            print(col)
             data_html += f"<th>{col}</th>"
         for row in rows:
             data_html += (
@@ -111,7 +112,6 @@ def show_all(table_name):
         # Return HTML
         data_html = "<table>"
         for col in rows[0]._fields:
-            print(col)
             data_html += f"<th>{col}</th>"
         for row in rows:
             data_html += (

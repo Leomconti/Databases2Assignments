@@ -113,7 +113,7 @@ for row in dept_data[:100]:
     cassandra.execute(
         f"""
         INSERT INTO employees_by_dept (dept_name, from_date, to_date, emp_no, birth_date, first_name, last_name, gender, hire_date)
-        VALUES ('{row[0]}l', '{row[1].strftime('%Y-%m-%d')}', '{row[2].strftime('%Y-%m-%d')}', {row[3]}, '{row[4].strftime('%Y-%m-%d')}', '{row[5]}', '{row[6]}', '{row[7]}', '{row[8].strftime('%Y-%m-%d')}')
+        VALUES ('{row[0]}', '{row[1].strftime('%Y-%m-%d')}', '{row[2].strftime('%Y-%m-%d')}', {row[3]}, '{row[4].strftime('%Y-%m-%d')}', '{row[5]}', '{row[6]}', '{row[7]}', '{row[8].strftime('%Y-%m-%d')}')
         """
     )
 print("dept data inserted")
