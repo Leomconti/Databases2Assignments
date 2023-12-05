@@ -136,25 +136,18 @@ def show_all(table_name):
     query = f"SELECT * FROM {table_name}"
     rows = cassandra.execute(query)
 
-    if html:
-        # Return HTML
-        data_html = "<table>"
-        for col in rows[0]._fields:
-            data_html += f"<th>{col}</th>"
-        for row in rows:
-            data_html += (
-                "<tr>"
-                + "".join([f"<td>{getattr(row, col)}</td>" for col in row._fields])
-                + "</tr>"
-            )
-        data_html += "</table>"
-        return render_template_string(data_html)
-    else:
-        results = []
-        for row in rows:
-            results.append([getattr(row, col) for col in row._fields])
-        print(results)
-        return jsonify("Printed data to console")
+    # Return HTML
+    data_html = "<table>"
+    for col in rows[0]._fields:
+        data_html += f"<th>{col}</th>"
+    for row in rows:
+        data_html += (
+            "<tr>"
+            + "".join([f"<td>{getattr(row, col)}</td>" for col in row._fields])
+            + "</tr>"
+        )
+    data_html += "</table>"
+    return render_template_string(data_html)
 
 
 if __name__ == "__main__":

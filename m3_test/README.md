@@ -24,6 +24,18 @@ sh add_to_db.sh
 docker exec -it mysql mysql -u root --password=admin123
 ```
 
+# For migration:
+(Obs: you'll have to add your own credentials for datastax, as I will not be publishing mine on this repo)
+
+```
+python migration.py
+```
+
+# To run
+
+-   open live server in FE
+-   run python app.py
+
 # Work done to get M3 up:
 
 -   Queries to create the column families (tablesn) in cassandra
