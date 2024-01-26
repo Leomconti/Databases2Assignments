@@ -1,3 +1,3 @@
 # Databases 2
 - ORMS, NoSQL, Graph databases...
-Assignments from my databases 2 course that I had in my 6th semester in university
+Projects from my databases 2 course that I had in my 6th semester in university
